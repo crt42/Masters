@@ -23,6 +23,6 @@ vl = np.quantile(qphi, 0.01)
 
 print("upper =",vu, " lower=",vl)
 plt.figure(figsize=(12,12))
-plt.imshow(qphi, norm=LogNorm(vmin=0.1, vmax=1000), origin='lower')
+plt.imshow(qphi, cmap='seismic', norm=LogNorm(vmin=0.1, vmax=1000), origin='lower')
 
 plt.show()
