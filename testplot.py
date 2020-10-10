@@ -21,13 +21,14 @@ qphi = np.nan_to_num(qphi)
 
 # SMOOTH IMAGE
 STD = 2.1 / (2.0*np.sqrt(2.0*np.log10(2.0)))
-qphi = convolve(qphi, Gaussian2DKernel(STD))
+qphi_smooth = convolve(qphi, Gaussian2DKernel(STD))
+qphi = qphi_smooth/qphi
 
 vu = np.quantile(qphi, 0.99)
 vl = np.quantile(qphi, 0.01)
 
 print("upper =",vu, " lower=",vl)
 plt.figure(figsize=(12,12))
-plt.imshow(qphi, cmap='seismic', norm=LogNorm(vmin=0.1, vmax=1000), origin='lower')
+plt.imshow(qphi, cmap='seismic', norm=LogNorm(vmin=0.01, vmax=100), origin='lower')
 
 plt.show()
