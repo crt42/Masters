@@ -34,8 +34,16 @@ x_m = 145
 y_m = 141
 a = 50
 b = 60
+t_rot = 0
 
 t = np.linspace(0, 2*np.pi, 100)
-plt.plot(x_m + a*np.cos(t), y_m + b*np.sin(t), 'k')
+Ell = np.array([a*np.cos(t), b*np.sin(t)])  
+R_rot = np.array([[np.cos(t_rot), -np.sin(t_rot)],
+                  [np.sin(t_rot), np.cos(t_rot)]])
+Ell_rot = np.zeros((2,Ell.shape[1]))
+for i in range(Ell.shape[1]):
+    Ell_rot[:,i] = np.dot(R_rot,Ell[:,i])
+    
+plt.plot(x_m + Ell_rot[0,:], y_m + Ell_rot[1,:], 'k')
 
 plt.show()
