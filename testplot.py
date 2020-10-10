@@ -29,4 +29,13 @@ print("upper =",vu, " lower=",vl)
 plt.figure(figsize=(12,12))
 plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 
+# ELLIPSE PLOTTING
+x_m = 145
+y_m = 141
+a = 50
+b = 60
+
+t = np.linspace(0, 2*np.pi, 100)
+plt.plot(x_m + a*np.cos(t), y_m + b*np.sin(t), 'k')
+
 plt.show()
