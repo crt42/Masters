@@ -34,7 +34,7 @@ x_m = 145
 y_m = 141
 a = 50
 b = 60
-t_rot = 0
+t_rot = np.radians(5)
 
 t = np.linspace(0, 2*np.pi, 100)
 Ell = np.array([a*np.cos(t), b*np.sin(t)])  
