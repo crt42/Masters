@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from astropy.convolution import convolve, Gaussian2DKernel
 
 # Custom functions from our pypeline:
 from gpi_analysis.plot      import imshow_fancy, get_vlims, scale_colourbar
@@ -32,12 +31,12 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 # ELLIPSE PLOTTING
 x_m = 145
 y_m = 141
-a = 50
-b = 60
-t_rot = np.radians(5)
+r = 60
+i = np.radians(32)
+t_rot = np.radians(95)
 
 t = np.linspace(0, 2*np.pi, 100)
-Ell = np.array([a*np.cos(t), b*np.sin(t)])  
+Ell = np.array([r*np.cos(t), r*np.cos(i)*np.sin(t)])  
 R_rot = np.array([[np.cos(t_rot), -np.sin(t_rot)],
                   [np.sin(t_rot), np.cos(t_rot)]])
 Ell_rot = np.zeros((2,Ell.shape[1]))
