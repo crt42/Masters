@@ -46,3 +46,5 @@ for i in range(Ell.shape[1]):
 plt.plot(x_m + Ell_rot[0,:], y_m + Ell_rot[1,:], 'k')
 
 plt.show()
+
+mask = np.zeros(1)
