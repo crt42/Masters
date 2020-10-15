@@ -71,6 +71,10 @@ for r in range(r_min, r_max):
             for x_m in range(x_m_min, x_m_max):
                 for y_m in range(y_m_min, y_m_max):
     
+                    # Initialising a mask and score    
+                    mask = np.full((len(qphi), len(qphi[0])), False)
+                    score = 0;
+                    
                     # Drawning an ellipse with this r, inc, t_rot, x_m, and y_m
                     t = np.linspace(0, 2*np.pi, 400)
                     Ell = np.array([r*np.cos(t), r*np.cos(np.radians(inc))*np.sin(t)])  
@@ -79,23 +83,14 @@ for r in range(r_min, r_max):
                     Ell_rot = np.zeros((2,Ell.shape[1]))
                     for i in range(Ell.shape[1]):
                         Ell_rot[:,i] = np.dot(R_rot,Ell[:,i])
-                    
-                    # Initialising a mask and score    
-                    mask = np.full((len(qphi), len(qphi[0])), False)
-                    score = 0;
-                    
-                    # Producing the mask
-                    for i in range(Ell.shape[1]):
+                        
+                        # Producing the mask and calculating score
                         sq_x = x_m + np.int(Ell_rot[0,i])
                         sq_y = y_m + np.int(Ell_rot[1,i])
-                        mask[sq_y, sq_x] = True
+                        if (mask[sq_y, sq_x] == False):
+                            score += qphi[sq_y, sq_x]
+                            mask[sq_y, sq_x] = True
                     
-                    # Calculating the score
-                    for i in range(len(qphi)):
-                        for j in range(len(qphi[0])):
-                            if (mask[i,j]):
-                                score += qphi[i, j]
-                
                     # Adding this ellipse's score to the score array
                     score_list[r - r_min,
                                inc - inc_min,
