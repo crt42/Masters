@@ -29,9 +29,9 @@ plt.figure(figsize=(12,12))
 plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 
 # ELLIPSE PLOTTING
-x_m = 145
-y_m = 141
-r = 60
+x_m = 130
+y_m = 130
+r = 70
 i = np.radians(32)
 t_rot = np.radians(95)
 
