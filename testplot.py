@@ -132,31 +132,18 @@ def plot_ellipse(r, inc, t_rot, x_m, y_m, col):
     plt.plot(x_m + Ell_rot[0,:], y_m + Ell_rot[1,:], col)
 
 ### ANNULUS DRAWING
-def plot_annulus(r_i, r_o, inc, t_rot, x_m, y_m, col):
-    
-    t = np.linspace(0, 2*np.pi, 100)
-    
-    Ell_i = np.array([r_i*np.cos(t), r_i*np.cos(np.radians(inc))*np.sin(t)])
-    Ell_o = np.array([r_o*np.cos(t), r_o*np.cos(np.radians(inc))*np.sin(t)])
-    
-    R_rot = np.array([[np.cos(np.radians(t_rot)), -np.sin(np.radians(t_rot))],
-                      [np.sin(np.radians(t_rot)), np.cos(np.radians(t_rot))]])
-    
-    Ell_rot_i = np.zeros((2,Ell_i.shape[1]))
-    Ell_rot_o = np.zeros((2,Ell_o.shape[1]))
-    for i in range(Ell_i.shape[1]):
-        Ell_rot_i[:,i] = np.dot(R_rot,Ell_i[:,i])
-        Ell_rot_o[:,i] = np.dot(R_rot,Ell_o[:,i])
-    
+def plot_annulus(r_i, r_o, inc, t_rot, x_m, y_m, col, a):
+        
     # Plotting the annulus
     
     x = np.linspace(0, 282, 100)
     y = np.linspace(0, 282, 100)
     
     x_mesh, y_mesh = np.meshgrid(x,y)
+
     r = ((x_mesh - x_m)/np.cos(np.radians(inc)))**2 + (y_mesh - y_m)**2
     plt.contourf(x_mesh, y_mesh, r, levels=[r_i**2, r_o**2],
-                 colors = col, alpha = 0.2)
+                 colors = col, alpha = a)
     
 ### PLOTTING IMAGE AND BEST FIT ELLIPSE
 
@@ -168,7 +155,7 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 
 plot_ellipse(60, 32, 90, 141, 141, 'k')
 
-plot_annulus(55, 65, 32, 90, 141, 141, 'k')
+plot_annulus(50, 65, 32, 0, 141, 141, 'k', 0.2)
 
 plt.show()
 
