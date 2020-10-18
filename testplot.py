@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
+import scipy.optimize
 
 # Custom functions from our pypeline:
 from gpi_analysis.plot      import imshow_fancy, get_vlims, scale_colourbar
@@ -43,10 +44,8 @@ def best_ellipse(r_min, r_max,
                  y_m_min, y_m_max):
     
     # Initialising the score array
-    score_list = np.zeros((r_max - r_min,
-                           inc_max - inc_min,
-                           t_rot_max - t_rot_min,
-                           x_m_max - x_m_min,
+    score_list = np.zeros((r_max - r_min, inc_max - inc_min,
+                           t_rot_max - t_rot_min, x_m_max - x_m_min,
                            y_m_max - y_m_min))
     
     # Iterating over all values of r, inc, t_rot, x_m, and y_m
@@ -57,43 +56,12 @@ def best_ellipse(r_min, r_max,
             for t_rot in range(t_rot_min, t_rot_max):
                 for x_m in range(x_m_min, x_m_max):
                     for y_m in range(y_m_min, y_m_max):
-        
-                        # Initialising a mask and score    
-                        mask = np.full((len(qphi), len(qphi[0])), False)
-                        mask_no = 0;
-                        score = 0;
-                        
-                        # Drawning an ellipse with this r, inc, t_rot, x_m, and y_m
-                        t = np.linspace(0, 2*np.pi, 400)
-                        Ell = np.array([r*np.cos(t), r*np.cos(np.radians(inc))*np.sin(t)])  
-                        R_rot = np.array([[np.cos(np.radians(t_rot)), -np.sin(np.radians(t_rot))],
-                                          [np.sin(np.radians(t_rot)), np.cos(np.radians(t_rot))]])
-                        Ell_rot = np.zeros((2,Ell.shape[1]))
-                        
-                        for i in range(Ell.shape[1]):
-                            
-                            # Rotating the ellipse
-                            Ell_rot[:,i] = np.dot(R_rot,Ell[:,i])
-                            
-                            # Producing the mask
-                            sq_x = x_m + np.int(Ell_rot[0,i])
-                            sq_y = y_m + np.int(Ell_rot[1,i])
-                            
-                            # Checking to not count a pixel's score multiple times
-                            if (mask[sq_y, sq_x] == False):
-                                
-                                # Calculating the score
-                                score += qphi[sq_y, sq_x]
-                                mask_no += 1
-                                mask[sq_y, sq_x] = True
-                        
                         # Adding this ellipse's score to the score array
-                        score_list[r - r_min,
-                                   inc - inc_min,
-                                   t_rot - t_rot_min,
-                                   x_m - x_m_min,
-                                   y_m - y_m_min] = score/mask_no
-      
+                        this_score = score_ellipse(r, inc, t_rot, x_m, y_m)
+                        score_list[r - r_min, inc - inc_min,
+                                    t_rot - t_rot_min, x_m - x_m_min,
+                                    y_m - y_m_min] = this_score
+    
     # Printing the maximum score
     print("Max score = ", np.max(score_list))
     
@@ -112,9 +80,58 @@ def best_ellipse(r_min, r_max,
     print("Best radius = ", ell_params[0])
     print("Best inclination = ", ell_params[1])
     print("Best rotation angle = ", ell_params[2])
-    print("Best centre coordinates = ", "(", ell_params[3], ",", ell_params[4], ")")
+    print("Best centre coordinates = ", "(", ell_params[3],
+                                        ",", ell_params[4], ")")
     
-    return ell_params
+    return ell_params  
+
+### SCORE ELLIPSE
+def score_ellipse(r, inc, t_rot, x_m, y_m, data):
+    
+    # Initialising a mask and score    
+    mask = np.full((len(data), len(data[0])), False)
+    mask_no = 0;
+    score = 0;
+                        
+    # Drawning an ellipse with this r, inc, t_rot, x_m, and y_m
+    t = np.linspace(0, 2*np.pi, 400)
+    Ell = np.array([r*np.cos(t), r*np.cos(np.radians(inc))*np.sin(t)])  
+    R_rot = np.array([[np.cos(np.radians(t_rot)), -np.sin(np.radians(t_rot))],
+                      [np.sin(np.radians(t_rot)), np.cos(np.radians(t_rot))]])
+    Ell_rot = np.zeros((2,Ell.shape[1]))
+                        
+    for i in range(Ell.shape[1]):
+                            
+        # Rotating the ellipse
+        Ell_rot[:,i] = np.dot(R_rot,Ell[:,i])
+                            
+        # Producing the mask
+        sq_x = np.int(x_m) + np.int(Ell_rot[0,i])
+        sq_y = np.int(y_m) + np.int(Ell_rot[1,i])
+                            
+        # Checking to not count a pixel's score multiple times
+        if (mask[sq_y, sq_x] == False):
+                                
+            # Calculating the score
+            score += data[sq_y, sq_x]
+            mask_no += 1
+            mask[sq_y, sq_x] = True
+            
+    return score/mask_no
+
+### RECIPROCAL SCORE
+def recip_score(init, data):
+    r, inc, t_rot, x_m, y_m = init
+    score = score_ellipse(r, inc, t_rot, x_m, y_m, data)
+    return 1/score
+
+### OPTIMISED ELLIPSE
+def opt_ellipse(r, inc, t_rot, x_m, y_m):
+    init = (r, inc, t_rot, x_m, y_m)
+    params = scipy.optimize.minimize(recip_score, init,
+                                     args = qphi, method = 'Powell')
+    print(params['x'])
+    return params['x']
 
 ### ELLIPSE DRAWING
 def plot_ellipse(r, inc, t_rot, x_m, y_m, col):
@@ -135,7 +152,8 @@ def plot_ellipse(r, inc, t_rot, x_m, y_m, col):
 plt.figure(figsize=(12,12))
 plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
     
-e = best_ellipse(50, 60, 25, 35, 82, 92, 140, 145, 140, 145)
+# e = best_ellipse(50, 60, 25, 35, 82, 92, 140, 145, 140, 145)
+e = opt_ellipse(60, 30, 90, 141, 141)
     
 plot_ellipse(e[0], e[1], e[2], e[3], e[4], 'k')
 # plot_ellipse(60, 32, 90, 141, 141, 'r')
