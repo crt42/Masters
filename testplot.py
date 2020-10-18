@@ -41,7 +41,7 @@ def best_ellipse(r_min, r_max,
                  inc_min, inc_max,
                  t_rot_min, t_rot_max,
                  x_m_min, x_m_max,
-                 y_m_min, y_m_max):
+                 y_m_min, y_m_max, data):
     
     # Initialising the score array
     score_list = np.zeros((r_max - r_min, inc_max - inc_min,
@@ -57,7 +57,7 @@ def best_ellipse(r_min, r_max,
                 for x_m in range(x_m_min, x_m_max):
                     for y_m in range(y_m_min, y_m_max):
                         # Adding this ellipse's score to the score array
-                        this_score = score_ellipse(r, inc, t_rot, x_m, y_m)
+                        this_score = score_ellipse(r, inc, t_rot, x_m, y_m, data)
                         score_list[r - r_min, inc - inc_min,
                                     t_rot - t_rot_min, x_m - x_m_min,
                                     y_m - y_m_min] = this_score
@@ -70,12 +70,7 @@ def best_ellipse(r_min, r_max,
     
     # Finding the maximum score ellipse's r, inc, t_rot, x_m, and y_m
     
-    ell_params = np.empty(5)   
-    ell_params[0] = max_coords[0] + r_min
-    ell_params[1] = max_coords[1] + inc_min
-    ell_params[2] = max_coords[2] + t_rot_min
-    ell_params[3] = max_coords[3] + x_m_min
-    ell_params[4] = max_coords[4] + y_m_min
+    ell_params = max_coords[0] + r_min, max_coords[1] + inc_min, max_coords[2] + t_rot_min, max_coords[3] + x_m_min, max_coords[4] + y_m_min
     
     print("Best radius = ", ell_params[0])
     print("Best inclination = ", ell_params[1])
@@ -122,12 +117,15 @@ def score_ellipse(r, inc, t_rot, x_m, y_m, data):
 ### RECIPROCAL SCORE
 def recip_score(init, data):
     r, inc, t_rot, x_m, y_m = init
+    # Finds the score of that ellipse
     score = score_ellipse(r, inc, t_rot, x_m, y_m, data)
+    # Returns the reciprocal of the score
     return 1/score
 
 ### OPTIMISED ELLIPSE
 def opt_ellipse(r, inc, t_rot, x_m, y_m):
     init = (r, inc, t_rot, x_m, y_m)
+    # Finds the minimum reciprocal scored ellipse
     params = scipy.optimize.minimize(recip_score, init,
                                      args = qphi, method = 'Powell')
     print(params['x'])
@@ -152,8 +150,8 @@ def plot_ellipse(r, inc, t_rot, x_m, y_m, col):
 plt.figure(figsize=(12,12))
 plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
     
-# e = best_ellipse(50, 60, 25, 35, 82, 92, 140, 145, 140, 145)
-e = opt_ellipse(60, 30, 90, 141, 141)
+e = best_ellipse(50, 60, 25, 35, 82, 92, 141, 142, 141, 142, qphi)
+# e = opt_ellipse(60, 30, 90, 141, 141)
     
 plot_ellipse(e[0], e[1], e[2], e[3], e[4], 'k')
 # plot_ellipse(60, 32, 90, 141, 141, 'r')
