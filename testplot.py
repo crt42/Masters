@@ -132,15 +132,69 @@ def plot_ellipse(r, inc, t_rot, x_m, y_m, col):
     plt.plot(x_m + Ell_rot[0,:], y_m + Ell_rot[1,:], col)
 
 ### BEST FITTING ANNULUS SEARCH
-def best_ellipse(r_i_min, r_max,
+def best_annulus(r_min, r_max,
+                 th_min, th_max,
                  inc_min, inc_max,
                  t_rot_min, t_rot_max,
                  x_m_min, x_m_max,
                  y_m_min, y_m_max):
-    print(hi)
+    
+    # Initialising the score array
+    score_list = np.zeros((r_max - r_min,
+                           th_max - th_min,
+                           inc_max - inc_min,
+                           t_rot_max - t_rot_min,
+                           x_m_max - x_m_min,
+                           y_m_max - y_m_min))
+    
+    # Iterating over all values of r, th, inc, t_rot, x_m, and y_m
+    for r in range(r_min, r_max):
+        # Printing time and progress
+        print(datetime.datetime.now(), "--->", (r - r_min)/(r_max - r_min) * 100, "%")
+        for th in range(th_min, th_max):
+            for inc in range(inc_min, inc_max):
+                for t_rot in range(t_rot_min, t_rot_max):
+                    for x_m in range(x_m_min, x_m_max):
+                        for y_m in range(y_m_min, y_m_max):
+            
+                            # Initialising a mask and score    
+                            mask = np.full((len(qphi), len(qphi[0])), False)
+                            mask_no = 0;
+                            score = 0;
+                            
+                            for i in range(0, 282):
+                                for j in range(0, 282):
+                                    z = (i*np.cos(np.radians(t_rot)) - j*np.sin(np.radians(t_rot)) - x_m*np.cos(np.radians(t_rot)) + y_m*np.sin(np.radians(t_rot)))**2 + ((j*np.cos(np.radians(t_rot)) + i*np.sin(np.radians(t_rot)) - y_m*np.cos(np.radians(t_rot)) - x_m*np.sin(np.radians(t_rot)))/np.cos(np.radians(inc)))**2
+                                    if (z < r - th/2 and z < r + th/2):
+                                        if (mask[i,j] == False):
+                                            # Calculating the score
+                                            score += qphi[i, j]
+                                            mask_no += 1
+                                            mask[i,j] = True
+
+                            # Adding this ellipse's score to the score array
+                            score_list[r - r_min,
+                                       th - th_min,
+                                       inc - inc_min,
+                                       t_rot - t_rot_min,
+                                       x_m - x_m_min,
+                                       y_m - y_m_min] = score/mask_no
+      
+    # Printing the maximum score
+    print("Max score = ", np.max(score_list))
+    
+    # Finding the maximum score coordinates in the score array
+    max_coords = np.unravel_index(score_list.argmax(), score_list.shape)
+    
+    # Finding the maximum score ellipse's r, inc, t_rot, x_m, and y_m
+    
+    a_params = max_coords[0] + r_min, max_coords[1] + th_min, max_coords[2] + inc_min, max_coords[3] + t_rot_min, max_coords[4] + x_m_min, max_coords[5] + y_m_min
+    
+    return a_params
+    
 
 ### ANNULUS DRAWING
-def plot_annulus(r_i, r_o, inc, t_rot, x_m, y_m, col, a):
+def plot_annulus(r, th, inc, t_rot, x_m, y_m, col, a):
         
     # Plotting the annulus
     
@@ -149,8 +203,8 @@ def plot_annulus(r_i, r_o, inc, t_rot, x_m, y_m, col, a):
     
     x, y = np.meshgrid(x_l,y_l)
 
-    r = (x*np.cos(np.radians(t_rot)) - y*np.sin(np.radians(t_rot)) - x_m*np.cos(np.radians(t_rot)) + y_m*np.sin(np.radians(t_rot)))**2 + ((y*np.cos(np.radians(t_rot)) + x*np.sin(np.radians(t_rot)) - y_m*np.cos(np.radians(t_rot)) - x_m*np.sin(np.radians(t_rot)))/np.cos(np.radians(inc)))**2
-    plt.contourf(x, y, r, levels=[r_i**2, r_o**2],
+    z = (x*np.cos(np.radians(t_rot)) - y*np.sin(np.radians(t_rot)) - x_m*np.cos(np.radians(t_rot)) + y_m*np.sin(np.radians(t_rot)))**2 + ((y*np.cos(np.radians(t_rot)) + x*np.sin(np.radians(t_rot)) - y_m*np.cos(np.radians(t_rot)) - x_m*np.sin(np.radians(t_rot)))/np.cos(np.radians(inc)))**2
+    plt.contourf(x, y, z, levels=[(r - th/2)**2, (r + th/2)**2],
                  colors = col, alpha = a)
     
 ### PLOTTING IMAGE AND BEST FIT ELLIPSE
@@ -163,7 +217,9 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 
 plot_ellipse(60, 32, 90, 141, 141, 'k')
 
-plot_annulus(55, 65, 32, 90, 141, 141, 'k', 0.2)
+a = best_annulus(50, 60, 10, 20, 30, 31, 90, 91, 141, 142, 141, 142)
+
+plot_annulus(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
 
 plt.show()
 
