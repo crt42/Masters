@@ -178,7 +178,7 @@ def best_annulus(r_min, r_max,
                                        inc - inc_min,
                                        t_rot - t_rot_min,
                                        x_m - x_m_min,
-                                       y_m - y_m_min] = score/mask_no
+                                       y_m - y_m_min] = score/np.sqrt(mask_no)
       
     # Printing the maximum score
     print("Max score = ", np.max(score_list))
@@ -215,11 +215,11 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 # e = best_ellipse(50, 60, 25, 35, 82, 92, 140, 145, 140, 145)
 # plot_ellipse(e[0], e[1], e[2], e[3], e[4], 'k')
 
-plot_ellipse(60, 32, 90, 141, 141, 'k')
+# plot_ellipse(60, 32, 90, 141, 141, 'k')
 
-a = best_annulus(50, 60, 10, 20, 30, 31, 90, 91, 141, 142, 141, 142)
-
+a = best_annulus(50, 60, 5, 30, 30, 31, 90, 91, 141, 142, 141, 142)
 plot_annulus(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
+plot_ellipse(a[0], a[2], a[3], a[4], a[5], 'k')
 
 plt.show()
 
