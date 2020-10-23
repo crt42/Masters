@@ -149,9 +149,9 @@ def best_annulus(r_min, r_max,
     
     # Iterating over all values of r, th, inc, t_rot, x_m, and y_m
     for r in range(r_min, r_max):
-        # Printing time and progress
-        print(datetime.datetime.now(), "--->", (r - r_min)/(r_max - r_min) * 100, "%")
         for th in range(th_min, th_max):
+            # Printing time and progress
+            print(datetime.datetime.now(), "--->", ((r - r_min + (th - th_min)/(th_max - th_min)))/(r_max - r_min) * 100, "%")
             for inc in range(inc_min, inc_max):
                 for t_rot in range(t_rot_min, t_rot_max):
                     for x_m in range(x_m_min, x_m_max):
@@ -178,7 +178,7 @@ def best_annulus(r_min, r_max,
                                        inc - inc_min,
                                        t_rot - t_rot_min,
                                        x_m - x_m_min,
-                                       y_m - y_m_min] = score/np.sqrt(mask_no)
+                                       y_m - y_m_min] = score/mask_no
       
     # Printing the maximum score
     print("Max score = ", np.max(score_list))
@@ -217,7 +217,7 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 
 # plot_ellipse(60, 32, 90, 141, 141, 'k')
 
-a = best_annulus(50, 60, 5, 30, 30, 31, 90, 91, 141, 142, 141, 142)
+a = best_annulus(50, 60, 10, 30, 30, 31, 90, 91, 141, 142, 141, 142)
 plot_annulus(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
 plot_ellipse(a[0], a[2], a[3], a[4], a[5], 'k')
 
