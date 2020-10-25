@@ -36,12 +36,11 @@ print("upper =",vu, " lower=",vl)
 beta = 10
 qphi = (np.arcsinh((qphi - vl)/beta))/(np.arcsinh((vu - vl)/beta))
 
+
+### ELLIPSE FUNCTIONS
+
 ### BEST FITTING ELLIPSE SEARCH
-def best_ellipse(r_min, r_max,
-                 inc_min, inc_max,
-                 t_rot_min, t_rot_max,
-                 x_m_min, x_m_max,
-                 y_m_min, y_m_max, data):
+def best_ellipse(r_min, r_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     
     # Initialising the score array
     score_list = np.zeros((r_max - r_min, inc_max - inc_min,
@@ -80,6 +79,22 @@ def best_ellipse(r_min, r_max,
     
     return ell_params  
 
+### DEPROJECTION
+def deproject(data, inc):
+    w = len(qphi[0])
+    h = len(qphi)
+    inc = np.radians(inc)
+    
+    new_w = np.int(w/np.cos(inc))
+    new_data = np.zeros((h, new_w))
+    print(new_w)
+    for i in range(0, h):
+        for j in range(0, new_w):
+
+            new_data[i, j] = data[i, np.int(j*np.cos(inc))]
+            
+    return new_data
+
 ### SCORE ELLIPSE
 def score_ellipse(r, inc, t_rot, x_m, y_m, data):
     
@@ -112,10 +127,10 @@ def score_ellipse(r, inc, t_rot, x_m, y_m, data):
             mask_no += 1
             mask[sq_y, sq_x] = True
             
-    return score/mask_no
+    return score
 
-### RECIPROCAL SCORE
-def recip_score(init, data):
+### RECIPROCAL SCORE ELLIPSE
+def recip_score_ellipse(init, data):
     r, inc, t_rot, x_m, y_m = init
     # Finds the score of that ellipse
     score = score_ellipse(r, inc, t_rot, x_m, y_m, data)
@@ -123,11 +138,11 @@ def recip_score(init, data):
     return 1/score
 
 ### OPTIMISED ELLIPSE
-def opt_ellipse(r, inc, t_rot, x_m, y_m):
+def opt_ellipse(r, inc, t_rot, x_m, y_m, data):
     init = (r, inc, t_rot, x_m, y_m)
     # Finds the minimum reciprocal scored ellipse
-    params = scipy.optimize.minimize(recip_score, init,
-                                     args = qphi, method = 'Powell')
+    params = scipy.optimize.minimize(recip_score_ellipse, init,
+                                     args = data, method = 'Powell')
     print(params['x'])
     return params['x']
 
@@ -146,13 +161,11 @@ def plot_ellipse(r, inc, t_rot, x_m, y_m, col):
     # Plotting the ellipse
     plt.plot(x_m + Ell_rot[0,:], y_m + Ell_rot[1,:], col)
 
+
+### ANNULUS FUNCTIONS
+
 ### BEST FITTING ANNULUS SEARCH
-def best_annulus(r_min, r_max,
-                 th_min, th_max,
-                 inc_min, inc_max,
-                 t_rot_min, t_rot_max,
-                 x_m_min, x_m_max,
-                 y_m_min, y_m_max):
+def best_annulus(r_min, r_max, th_min, th_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     
     # Initialising the score array
     score_list = np.zeros((r_max - r_min,
@@ -171,30 +184,12 @@ def best_annulus(r_min, r_max,
                 for t_rot in range(t_rot_min, t_rot_max):
                     for x_m in range(x_m_min, x_m_max):
                         for y_m in range(y_m_min, y_m_max):
-            
-                            # Initialising a mask and score    
-                            mask = np.full((len(qphi), len(qphi[0])), False)
-                            mask_no = 0;
-                            score = 0;
                             
-                            for i in range(0, 282):
-                                for j in range(0, 282):
-                                    z = (i*np.cos(np.radians(t_rot)) - j*np.sin(np.radians(t_rot)) - x_m*np.cos(np.radians(t_rot)) + y_m*np.sin(np.radians(t_rot)))**2 + ((j*np.cos(np.radians(t_rot)) + i*np.sin(np.radians(t_rot)) - y_m*np.cos(np.radians(t_rot)) - x_m*np.sin(np.radians(t_rot)))/np.cos(np.radians(inc)))**2
-                                    if (z < r - th/2 and z < r + th/2):
-                                        if (mask[i,j] == False):
-                                            # Calculating the score
-                                            score += qphi[i, j]
-                                            mask_no += 1
-                                            mask[i,j] = True
-
-                            # Adding this ellipse's score to the score array
-                            score_list[r - r_min,
-                                       th - th_min,
-                                       inc - inc_min,
-                                       t_rot - t_rot_min,
-                                       x_m - x_m_min,
-                                       y_m - y_m_min] = score/mask_no
-      
+                            this_score = score_annulus(r, th, inc, t_rot, x_m, y_m, data)
+                            score_list[r - r_min, inc - inc_min, th - th_min,
+                                       t_rot - t_rot_min, x_m - x_m_min,
+                                       y_m - y_m_min] = this_score
+    
     # Printing the maximum score
     print("Max score = ", np.max(score_list))
     
@@ -205,8 +200,51 @@ def best_annulus(r_min, r_max,
     
     a_params = max_coords[0] + r_min, max_coords[1] + th_min, max_coords[2] + inc_min, max_coords[3] + t_rot_min, max_coords[4] + x_m_min, max_coords[5] + y_m_min
     
-    return a_params
+    print("Best radius = ", a_params[0])
+    print("Best thickness = ", a_params[1])
+    print("Best inclination = ", a_params[2])
+    print("Best rotation angle = ", a_params[3])
+    print("Best centre coordinates = ", "(", a_params[4],
+                                        ",", a_params[5], ")")
     
+    return a_params
+
+### SCORE ANNULUS
+def score_annulus(r, th, inc, t_rot, x_m, y_m, data):
+    # Initialising a mask and score    
+    mask = np.full((len(qphi), len(qphi[0])), False)
+    mask_no = 0
+    score = 0
+                            
+    for i in range(0, 282):
+        for j in range(0, 282):
+            z = (i*np.cos(np.radians(t_rot)) - j*np.sin(np.radians(t_rot)) - x_m*np.cos(np.radians(t_rot)) + y_m*np.sin(np.radians(t_rot)))**2 + ((j*np.cos(np.radians(t_rot)) + i*np.sin(np.radians(t_rot)) - y_m*np.cos(np.radians(t_rot)) - x_m*np.sin(np.radians(t_rot)))/np.cos(np.radians(inc)))**2
+            if (z < r - th/2 and z < r + th/2):
+                if (mask[i,j] == False):
+                    # Calculating the score
+                    score += qphi[i, j]
+                    mask_no += 1
+                    mask[i,j] = True
+    if mask_no == 0:
+        mask_no = 1
+    return score/mask_no
+
+### RECIPROCAL SCORE ANNULUS
+def recip_score_annulus(init, data):
+    r, th, inc, t_rot, x_m, y_m = init
+    # Finds the score of that ellipse
+    score = score_annulus(r, th, inc, t_rot, x_m, y_m, data)
+    # Returns the reciprocal of the score
+    return 1/score    
+
+### OPTIMISED ANNULUS
+def opt_annulus(r, th, inc, t_rot, x_m, y_m, data):
+    init = (r, th, inc, t_rot, x_m, y_m)
+    # Finds the minimum reciprocal scored ellipse
+    params = scipy.optimize.minimize(recip_score_annulus, init,
+                                     args = data, method = 'Powell')
+    print(params['x'])
+    return params['x']
 
 ### ANNULUS DRAWING
 def plot_annulus(r, th, inc, t_rot, x_m, y_m, col, a):
@@ -222,27 +260,26 @@ def plot_annulus(r, th, inc, t_rot, x_m, y_m, col, a):
     plt.contourf(x, y, z, levels=[(r - th/2)**2, (r + th/2)**2],
                  colors = col, alpha = a)
     
+    
 ### PLOTTING IMAGE AND BEST FIT ELLIPSE
+
+qphi = deproject(qphi, 31)
 
 plt.figure(figsize=(12,12))
 plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
     
-<<<<<<< HEAD
-e = best_ellipse(50, 60, 25, 35, 82, 92, 141, 142, 141, 142, qphi)
-# e = opt_ellipse(60, 30, 90, 141, 141)
+# e = best_ellipse(40, 70, 25, 40, 80, 100, 135, 145, 135, 145, qphi)
+# e = opt_ellipse(60, 30, 90, 141, 141, qphi)
     
-plot_ellipse(e[0], e[1], e[2], e[3], e[4], 'k')
-# plot_ellipse(60, 32, 90, 141, 141, 'r')
-=======
-# e = best_ellipse(50, 60, 25, 35, 82, 92, 140, 145, 140, 145)
 # plot_ellipse(e[0], e[1], e[2], e[3], e[4], 'k')
+plot_ellipse(61, 0, 90, 168, 142, 'k')
 
-# plot_ellipse(60, 32, 90, 141, 141, 'k')
+# a = best_annulus(50, 60, 10, 11, 30, 31, 90, 91, 141, 142, 141, 142, qphi)
+# a = opt_annulus(55, 20, 30, 90, 141, 141, qphi)
 
-a = best_annulus(50, 60, 10, 30, 30, 31, 90, 91, 141, 142, 141, 142)
-plot_annulus(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
-plot_ellipse(a[0], a[2], a[3], a[4], a[5], 'k')
->>>>>>> annulus
+# plot_annulus(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
+# plot_annulus(55, 1, 30, 90, 141, 141, 'k', 0.2)
+# plot_ellipse(a[0], a[2], a[3], a[4], a[5], 'k')
 
 plt.show()
 
