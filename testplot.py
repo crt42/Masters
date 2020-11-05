@@ -11,8 +11,8 @@ from gpi_analysis.analysis  import make_radialstokes, make_linpolint
 
 # Importing my functions:
 from functions import deproject
-from functions import plot_ellipse, best_ellipse, opt_ellipse
-from functions import plot_annulus, best_annulus, opt_annulus
+from functions import e_plot, e_best, e_opt, e_evo
+from functions import a_plot, a_best, a_opt
 
 ### COMPUTATION TIME START
 
@@ -47,18 +47,19 @@ qphi = (np.arcsinh((qphi - vl)/beta))/(np.arcsinh((vu - vl)/beta))
 plt.figure(figsize=(12,12))
 plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
     
-e = best_ellipse(50, 60, 30, 35, 85, 95, 140, 145, 140, 145, qphi)
-# e = opt_ellipse(60, 30, 90, 141, 141, qphi)
+# e = e_best(50, 60, 30, 35, 85, 95, 140, 145, 140, 145, qphi)
+# e = e_opt(60, 30, 90, 141, 141, qphi)
+e = e_evo(0, 100, 0, 60, 0, 180, 101, 181, 101, 181, qphi)
     
-plot_ellipse(e[0], e[1], e[2], e[3], e[4], 'k')
-# plot_ellipse(61, 30, 90, 141, 141, 'k')
+e_plot(e[0], e[1], e[2], e[3], e[4], 'k')
+# e_plot(61, 30, 90, 141, 141, 'k')
 
-# a = best_annulus(50, 60, 10, 11, 30, 31, 90, 91, 141, 142, 141, 142, qphi)
-# a = opt_annulus(55, 20, 30, 90, 141, 141, qphi)
+# a = a_best(50, 60, 10, 11, 30, 31, 90, 91, 141, 142, 141, 142, qphi)
+# a = a_opt(55, 20, 30, 90, 141, 141, qphi)
 
-# plot_annulus(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
-plot_annulus(55, 20, 30, 90, 141, 141, 'k', 0.1)
-# plot_ellipse(a[0], a[2], a[3], a[4], a[5], 'k')
+# a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
+# a_plot(55, 20, 30, 90, 141, 141, 'k', 0.1)
+# e_plot(a[0], a[2], a[3], a[4], a[5], 'k')
 
 plt.show()
 

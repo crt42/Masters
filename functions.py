@@ -5,7 +5,15 @@ import datetime
 import scipy.optimize
 import matplotlib.pyplot as plt
 
+
+
+#########################
+### GENERAL FUNCTIONS ###
+#########################
+
 ### DEPROJECTION
+### Takes a set of data, and stretches this depending on the inclination,
+### resulting in it being deprojected.
 def deproject(data, inc):
     w = len(data[0])
     h = len(data)
@@ -21,10 +29,16 @@ def deproject(data, inc):
             
     return new_data
 
-### ELLIPSE FUNCTIONS
+
+
+#########################
+### ELLIPSE FUNCTIONS ###
+#########################
 
 ### BEST FITTING ELLIPSE SEARCH
-def best_ellipse(r_min, r_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
+### Searches through all ellipses in the given ranges for parameters,
+### returning the best scoring one.
+def e_best(r_min, r_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     
     # Initialising the score array
     score_list = np.zeros((r_max - r_min, inc_max - inc_min,
@@ -40,7 +54,7 @@ def best_ellipse(r_min, r_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, 
                 for x_m in range(x_m_min, x_m_max):
                     for y_m in range(y_m_min, y_m_max):
                         # Adding this ellipse's score to the score array
-                        this_score = score_ellipse(r, inc, t_rot, x_m, y_m, data)
+                        this_score = e_score(r, inc, t_rot, x_m, y_m, data)
                         score_list[r - r_min, inc - inc_min,
                                     t_rot - t_rot_min, x_m - x_m_min,
                                     y_m - y_m_min] = this_score
@@ -64,7 +78,8 @@ def best_ellipse(r_min, r_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, 
     return ell_params  
 
 ### SCORE ELLIPSE
-def score_ellipse(r, inc, t_rot, x_m, y_m, data):
+### Scores a particular ellipse on the data given.
+def e_score(r, inc, t_rot, x_m, y_m, data):
     
     # Initialising a mask and score    
     mask = np.full((len(data), len(data[0])), False)
@@ -98,24 +113,39 @@ def score_ellipse(r, inc, t_rot, x_m, y_m, data):
     return score
 
 ### RECIPROCAL SCORE ELLIPSE
-def recip_score_ellipse(init, data):
+### Finds the reciprocal of the score of an ellipse.
+def e_r_score(init, data):
     r, inc, t_rot, x_m, y_m = init
     # Finds the score of that ellipse
-    score = score_ellipse(r, inc, t_rot, x_m, y_m, data)
+    score = e_score(r, inc, t_rot, x_m, y_m, data)
     # Returns the reciprocal of the score
     return 1/score
 
 ### OPTIMISED ELLIPSE
-def opt_ellipse(r, inc, t_rot, x_m, y_m, data):
+### Performs an optimised search for the best fitting ellipse, using the
+### parameters as a starting point.
+def e_opt(r, inc, t_rot, x_m, y_m, data):
     init = (r, inc, t_rot, x_m, y_m)
     # Finds the minimum reciprocal scored ellipse
-    params = scipy.optimize.minimize(recip_score_ellipse, init,
+    params = scipy.optimize.minimize(e_r_score, init,
                                      args = data, method = 'Powell')
     print(params['x'])
     return params['x']
 
+### DIFFERENTIAL EVOLUTION ELLIPSE
+### Performs a differential evolution algorithm search for the best
+### fitting ellipse, using the parameters as a starting point.
+def e_evo(r_min, r_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
+    init = [(r_min, r_max), (inc_min, inc_max), (t_rot_min, t_rot_max),
+            (x_m_min, x_m_max), (y_m_min, y_m_max)]   
+    params = scipy.optimize.differential_evolution(e_r_score, init,
+                                                   args = (data,))
+    print(params['x'])
+    return params['x'] 
+
 ### ELLIPSE DRAWING
-def plot_ellipse(r, inc, t_rot, x_m, y_m, col):
+### Draws an ellipse with these parameters and colour.
+def e_plot(r, inc, t_rot, x_m, y_m, col):
 
     t = np.linspace(0, 2*np.pi, 100)
     
@@ -128,11 +158,17 @@ def plot_ellipse(r, inc, t_rot, x_m, y_m, col):
     
     # Plotting the ellipse
     plt.plot(x_m + Ell_rot[0,:], y_m + Ell_rot[1,:], col)
-    
-### ANNULUS FUNCTIONS
+
+
+
+#########################
+### ANNULUS FUNCTIONS ###
+#########################
 
 ### BEST FITTING ANNULUS SEARCH
-def best_annulus(r_min, r_max, th_min, th_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
+### Searches through all annuli in the given ranges for parameters,
+### returning the best scoring one.
+def a_best(r_min, r_max, th_min, th_max, inc_min, inc_max, t_rot_min, t_rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     
     # Initialising the score array
     score_list = np.zeros((r_max - r_min,
@@ -152,7 +188,7 @@ def best_annulus(r_min, r_max, th_min, th_max, inc_min, inc_max, t_rot_min, t_ro
                     for x_m in range(x_m_min, x_m_max):
                         for y_m in range(y_m_min, y_m_max):
                             
-                            this_score = score_annulus(r, th, inc, t_rot, x_m, y_m, data)
+                            this_score = a_score(r, th, inc, t_rot, x_m, y_m, data)
                             score_list[r - r_min, inc - inc_min, th - th_min,
                                        t_rot - t_rot_min, x_m - x_m_min,
                                        y_m - y_m_min] = this_score
@@ -177,7 +213,8 @@ def best_annulus(r_min, r_max, th_min, th_max, inc_min, inc_max, t_rot_min, t_ro
     return a_params
 
 ### SCORE ANNULUS
-def score_annulus(r, th, inc, t_rot, x_m, y_m, data):
+### Scores a particular annulus on the data given.
+def a_score(r, th, inc, t_rot, x_m, y_m, data):
     # Initialising a mask and score    
     mask = np.full((len(data), len(data[0])), False)
     mask_no = 0
@@ -197,24 +234,28 @@ def score_annulus(r, th, inc, t_rot, x_m, y_m, data):
     return score/mask_no
 
 ### RECIPROCAL SCORE ANNULUS
-def recip_score_annulus(init, data):
+### Finds the reciprocal of the score of an annulus.
+def a_r_score(init, data):
     r, th, inc, t_rot, x_m, y_m = init
     # Finds the score of that ellipse
-    score = score_annulus(r, th, inc, t_rot, x_m, y_m, data)
+    score = a_score(r, th, inc, t_rot, x_m, y_m, data)
     # Returns the reciprocal of the score
     return 1/score    
 
 ### OPTIMISED ANNULUS
-def opt_annulus(r, th, inc, t_rot, x_m, y_m, data):
+### Performs an optimised search for the best fitting annulus, using the
+### parameters as a starting point.
+def a_opt(r, th, inc, t_rot, x_m, y_m, data):
     init = (r, th, inc, t_rot, x_m, y_m)
     # Finds the minimum reciprocal scored ellipse
-    params = scipy.optimize.minimize(recip_score_annulus, init,
+    params = scipy.optimize.minimize(a_r_score, init,
                                      args = data, method = 'Powell')
     print(params['x'])
     return params['x']
 
 ### ANNULUS DRAWING
-def plot_annulus(r, th, inc, t_rot, x_m, y_m, col, a):
+### Draws an annulus with these parameters and colour.
+def a_plot(r, th, inc, t_rot, x_m, y_m, col, a):
         
     # Plotting the annulus
     
