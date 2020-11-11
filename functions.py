@@ -11,6 +11,12 @@ import matplotlib.pyplot as plt
 ### GENERAL FUNCTIONS ###
 #########################
 
+### HYPERBOLIC SCALING
+### Takes a set of data, beta value, and upper and lower limits, and scales
+### the data with a hyperbolic function.
+def hyperbolic(data, beta, vu, vl):
+    return (np.arcsinh((data - vl)/beta))/(np.arcsinh((vu - vl)/beta))  
+
 ### DEPROJECTION
 ### Takes a set of data, and stretches this depending on the inclination,
 ### resulting in it being deprojected.
@@ -268,6 +274,15 @@ def a_surf_map(r, th, inc, rot, x_m, y_m, surf, back, data):
             if (z > r - th/2 and z < r + th/2):
                 map[j, i] = surf
     return map
+
+### SURFACE BRIGHTNESS ANNULUS SCORE
+### Returns the score of the data minus a surface brightness annulus map.
+def a_surf_score(data, map):
+    score = 0
+    for i in range (0, len(data)):
+        for j in range(0, len(data[0])):
+            score += (data[i,j])**2 - (map[i,j])**2
+    return score
 
 ### ANNULUS DRAWING
 ### Draws an annulus with these parameters and colour.

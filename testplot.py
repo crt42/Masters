@@ -10,9 +10,9 @@ from gpi_analysis.inputs    import getfitsdata, getfitskeywords
 from gpi_analysis.analysis  import make_radialstokes, make_linpolint
 
 # Importing my functions:
-from functions import deproject
+from functions import deproject, hyperbolic
 from functions import e_plot, e_best, e_opt, e_evo
-from functions import a_plot, a_best, a_opt, a_surf_map, a_z
+from functions import a_plot, a_best, a_opt
 
 ### COMPUTATION TIME START
 
@@ -37,8 +37,7 @@ print("upper =",vu, " lower=",vl)
 
 ### HYPERBOLIC FUNCTION
 
-beta = 10
-qphi = (np.arcsinh((qphi - vl)/beta))/(np.arcsinh((vu - vl)/beta))  
+qphi = hyperbolic(qphi, 10, vu, vl)
     
 ### PLOTTING IMAGE AND BEST FIT ELLIPSE
 
@@ -60,10 +59,6 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 # a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
 # a_plot(55, 20, 30, 90, 141, 141, 'k', 0.1)
 # e_plot(a[0], a[2], a[3], a[4], a[5], 'k')
-        
-s = a_surf_map(60, 10, 30, 90, 141, 141, 100, 10, qphi)
-
-plt.imshow(s)
 
 plt.show()
 
