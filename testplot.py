@@ -12,7 +12,7 @@ from gpi_analysis.analysis  import make_radialstokes, make_linpolint
 # Importing my functions:
 from functions import deproject
 from functions import e_plot, e_best, e_opt, e_evo
-from functions import a_plot, a_best, a_opt
+from functions import a_plot, a_best, a_opt, a_surf_map, a_z
 
 ### COMPUTATION TIME START
 
@@ -54,12 +54,16 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 # e_plot(e[0], e[1], e[2], e[3], e[4], 'k')
 # e_plot(61, 30, 90, 141, 141, 'k')
 
-a = a_best(58, 62, 1, 20, 30, 31, 90, 91, 141, 142, 141, 142, qphi)
+# a = a_best(58, 62, 1, 20, 30, 31, 90, 91, 141, 142, 141, 142, qphi)
 # a = a_opt(55, 20, 30, 90, 141, 141, qphi)
 
-a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
+# a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
 # a_plot(55, 20, 30, 90, 141, 141, 'k', 0.1)
 # e_plot(a[0], a[2], a[3], a[4], a[5], 'k')
+        
+s = a_surf_map(60, 10, 30, 90, 141, 141, 100, 10, qphi)
+
+plt.imshow(s)
 
 plt.show()
 

@@ -170,7 +170,7 @@ def e_plot(r, inc, rot, x_m, y_m, col):
 ### ANNULUS Z FUNCTION
 ### Returns the radius of the ellipse at that point
 def a_z(i, j, inc, rot, x_m, y_m):
-    z = (i*np.cos(np.radians(rot)) - j*np.sin(np.radians(rot)) - x_m*np.cos(np.radians(rot)) + y_m*np.sin(np.radians(rot)))**2 + ((j*np.cos(np.radians(rot)) + i*np.sin(np.radians(rot)) - y_m*np.cos(np.radians(rot)) - x_m*np.sin(np.radians(rot)))/np.cos(np.radians(inc)))**2
+    z = np.sqrt((i*np.cos(np.radians(rot)) - j*np.sin(np.radians(rot)) - x_m*np.cos(np.radians(rot)) + y_m*np.sin(np.radians(rot)))**2 + ((j*np.cos(np.radians(rot)) + i*np.sin(np.radians(rot)) - y_m*np.cos(np.radians(rot)) - x_m*np.sin(np.radians(rot)))/np.cos(np.radians(inc)))**2)
     return z
 
 ### BEST FITTING ANNULUS SEARCH
@@ -192,7 +192,6 @@ def a_best(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, x_m
                         for y_m in range(y_m_min, y_m_max):
                             
                             this_score = a_score(r, th, inc, rot, x_m, y_m, data)
-                            print(this_score)
                             score_list[r - r_min, th - th_min, inc - inc_min, rot - rot_min, x_m - x_m_min, y_m - y_m_min] = this_score
     
     # Printing the maximum score
@@ -259,19 +258,17 @@ def a_opt(r, th, inc, rot, x_m, y_m, data):
     print(params['x'])
     return params['x']
 
-### SURFACE BRIGHTNESS ANNULUS SCORE
-def a_surf_score(r, th, inc, rot, x_m, y_m, surf, back, data):
-    map = np.fill((len(data), len(data[0])), back)
+### SURFACE BRIGHTNESS ANNULUS MAP
+### Returns a 2D array plotting an annulus of given parameters.
+def a_surf_map(r, th, inc, rot, x_m, y_m, surf, back, data):
+    map = np.full((len(data), len(data[0])), back)
     for i in range (0, len(data)):
         for j in range(0, len(data[0])):
             z = a_z(i, j, inc, rot, x_m, y_m)
             if (z > r - th/2 and z < r + th/2):
-                if (mask[i,j] == False):
-                    # Calculating the score
-                    score +=  data[i, j]
-                    mask_no += 1
-                    mask[i,j] = True
-    
+                map[j, i] = surf
+    return map
+
 ### ANNULUS DRAWING
 ### Draws an annulus with these parameters and colour.
 def a_plot(r, th, inc, rot, x_m, y_m, col, a):
@@ -282,4 +279,4 @@ def a_plot(r, th, inc, rot, x_m, y_m, col, a):
     x, y = np.meshgrid(x_l,y_l)
     
     z = a_z(x, y, inc, rot, x_m, y_m)
-    plt.contourf(x, y, z, levels=[(r - th/2)**2, (r + th/2)**2], colors = col, alpha = a)
+    plt.contourf(x, y, z, levels=[r - th/2, r + th/2], colors = col, alpha = a)
