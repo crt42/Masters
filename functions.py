@@ -140,14 +140,11 @@ def e_opt(r, inc, rot, x_m, y_m, data):
 
 ### DIFFERENTIAL EVOLUTION ELLIPSE
 ### Performs a differential evolution algorithm search for the best
-### fitting ellipse, using the parameters as a starting point.
+### fitting ellipse in the range of parameters given.
 def e_evo(r_min, r_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     init = [(r_min, r_max), (inc_min, inc_max), (rot_min, rot_max),
             (x_m_min, x_m_max), (y_m_min, y_m_max)]   
-    params = scipy.optimize.differential_evolution(e_r_score, init,
-                                                   args = (data,),
-                                                   popsize=100,
-                                                   mutation=(1,1.5))
+    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,))
     print(params['x'])
     return params['x'] 
 
@@ -277,12 +274,25 @@ def a_surf_map(r, th, inc, rot, x_m, y_m, surf, back, data):
 
 ### SURFACE BRIGHTNESS ANNULUS SCORE
 ### Returns the score of the data minus a surface brightness annulus map.
-def a_surf_score(data, map):
+def a_surf_score(init, data):
+    r, th, inc, rot, x_m, y_m, surf, back = init
     score = 0
+    map = a_surf_map(r, th, inc, rot, x_m, y_m, surf, back, data)
     for i in range (0, len(data)):
         for j in range(0, len(data[0])):
-            score += (data[i,j])**2 - (map[i,j])**2
+            score += (data[i,j] - map[i,j])**2
     return score
+
+### DIFFERENTIAL EVOLUTION SURFACE BRIGHTNESS ANNULUS
+### Performs a differential evolution algorithm search for the best
+### fitting annulus with a given surface brightness, in the range of
+### parameters given.
+def a_surf_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, surf_min, surf_max, back_min, back_max, data):
+    init = [(r_min, r_max), (th_min, th_max), (inc_min, inc_max), (rot_min, rot_max), (x_m_min, x_m_max), (y_m_min, y_m_max), (surf_min, surf_max), (back_min, back_max)]   
+    
+    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,))
+    print(params['x'])
+    return params['x'] 
 
 ### ANNULUS DRAWING
 ### Draws an annulus with these parameters and colour.

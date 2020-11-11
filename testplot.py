@@ -12,7 +12,7 @@ from gpi_analysis.analysis  import make_radialstokes, make_linpolint
 # Importing my functions:
 from functions import deproject, hyperbolic
 from functions import e_plot, e_best, e_opt, e_evo
-from functions import a_plot, a_best, a_opt
+from functions import a_plot, a_best, a_opt, a_surf_evo
 
 ### COMPUTATION TIME START
 
@@ -31,13 +31,13 @@ print('target, itime', target,itime)
 
 qphi = np.nan_to_num(qphi)
 
-vu = np.quantile(qphi, 0.9)
-vl = np.quantile(qphi, 0.02)
+vu = np.quantile(qphi, 0.99)
+vl = np.quantile(qphi, 0.01)
 print("upper =",vu, " lower=",vl)
 
 ### HYPERBOLIC FUNCTION
 
-qphi = hyperbolic(qphi, 10, vu, vl)
+# qphi = hyperbolic(qphi, 10, vu, vl)
     
 ### PLOTTING IMAGE AND BEST FIT ELLIPSE
 
@@ -48,15 +48,16 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
     
 # e = e_best(50, 60, 30, 35, 85, 95, 140, 145, 140, 145, qphi)
 # e = e_opt(60, 0, 90, 141, 141, qphi)
-# e = e_evo(40, 100, 0, 60, 0, 180, 101, 181, 101, 181, qphi)
+# e = e_evo(40, 100, 0, 60, 45, 135, 131, 151, 131, 151, qphi)
 
 # e_plot(e[0], e[1], e[2], e[3], e[4], 'k')
 # e_plot(61, 30, 90, 141, 141, 'k')
 
 # a = a_best(58, 62, 1, 20, 30, 31, 90, 91, 141, 142, 141, 142, qphi)
 # a = a_opt(55, 20, 30, 90, 141, 141, qphi)
+a = a_surf_evo(50, 100, 1, 30, 20, 50, 45, 135, 136, 151, 136, 151, 0, 100, 0, 1, qphi)
 
-# a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.2)
+a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.4)
 # a_plot(55, 20, 30, 90, 141, 141, 'k', 0.1)
 # e_plot(a[0], a[2], a[3], a[4], a[5], 'k')
 
