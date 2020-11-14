@@ -42,30 +42,31 @@ print("upper =",vu, " lower=",vl)
 # qphi = deproject(qphi, 31)
 
 plt.figure(figsize=(12,12))
-plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
+# plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
+t = test_map(60, 20, 30, 110, 141, 141, 10, 1, 282, True)
+plt.imshow(t, cmap='seismic', origin='lower')
+plt.colorbar(shrink=0.8)
 
 ### ELLIPSE FITTING
-# e = e_best(50, 60, 30, 35, 85, 95, 140, 145, 140, 145, qphi)
-# e = e_opt(60, 0, 90, 141, 141, qphi)
-# e = e_evo(40, 100, 0, 60, 45, 135, 131, 151, 131, 151, qphi)
+# e = e_best(50, 60, 30, 35, 85, 95, 140, 145, 140, 145, t)
+# e = e_opt(60, 0, 90, 141, 141, t)
+# e = e_evo(40, 100, 0, 60, 45, 135, 131, 151, 131, 151, t)
 
 ### ELLIPSE PLOTTING
 # e_plot(e[0], e[1], e[2], e[3], e[4], 'k')
 # e_plot(61, 30, 90, 141, 141, 'k')
 
 ### ANNULUS FITTING
-# a = a_best(58, 62, 1, 20, 30, 31, 90, 91, 141, 142, 141, 142, qphi)
-# a = a_opt(55, 20, 30, 90, 141, 141, qphi)
-# a = a_surf_evo(50, 100, 1, 30, 20, 50, 45, 135, 136, 151, 136, 151, 0, 20, -5, 5, qphi)
+# a = a_best(58, 62, 1, 20, 30, 31, 90, 91, 141, 142, 141, 142, t)
+# a = a_opt(55, 20, 30, 90, 141, 141, t)
+a = a_surf_evo(50, 100, 1, 30, 20, 50, 45, 135, 136, 151, 136, 151, 0, 20, -5, 5, t)
 # a = a_surf_opt(50, 25, 30, 90, 141, 141, 10, 1, qphi)
 
 ### ANNULUS PLOTTING
-# a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.4)
+a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.4)
 # a_plot(55, 20, 30, 70, 141, 141, 'k', 0.4)
 # e_plot(a[0], a[2], a[3], a[4], a[5], 'k')
 
-plt.imshow(test_map(60, 20, 30, 120, 141, 141, 10, 1, 282), cmap='seismic', origin='lower')
-plt.colorbar(shrink=0.8)
 plt.show()
 
 ### COMPUTATION TIME END

@@ -45,13 +45,16 @@ def deproject(data, inc):
 ### TEST MAP
 ### Creates a map of an artificial ring using input parameters, in order to
 ### test fitting methods on.
-def test_map(r, th, inc, rot, x_m, y_m, surf, back, size):
+def test_map(r, th, inc, rot, x_m, y_m, surf, back, size, noise):
     test_map = np.full((size, size), back)
     for i in range(size):
         for j in range(size):
             x, y = rotate(i, j, x_m, y_m, rot)
             R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
             test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(0.5*pow(th, 2)))
+    if (noise == True):       
+        noise = np.random.poisson(test_map)
+        test_map = test_map + noise
     return test_map
 
 
@@ -192,7 +195,7 @@ def e_plot(r, inc, rot, x_m, y_m, col):
 ### ANNULUS Z FUNCTION
 ### Returns the radius of the ellipse at that point
 def a_z(i, j, inc, rot, x_m, y_m):
-    x, y = rotate(i, j, rot)
+    x, y = rotate(i, j, x_m, y_m, rot)
     z = np.sqrt((x)**2 + ((y)**2)/np.cos(np.radians(inc)))
     return z
 
