@@ -11,6 +11,13 @@ import matplotlib.pyplot as plt
 ### GENERAL FUNCTIONS ###
 #########################
 
+### ROTATE
+### Rotates co-ordinates around a centre point by an angle
+def rotate(i, j, x_m, y_m, rot):
+    x = i*np.cos(np.radians(rot)) - j*np.sin(np.radians(rot)) - x_m*np.cos(np.radians(rot)) + y_m*np.sin(np.radians(rot))
+    y = j*np.cos(np.radians(rot)) + i*np.sin(np.radians(rot)) - y_m*np.cos(np.radians(rot)) - x_m*np.sin(np.radians(rot))
+    return x, y
+
 ### HYPERBOLIC SCALING
 ### Takes a set of data, beta value, and upper and lower limits, and scales
 ### the data with a hyperbolic function.
@@ -42,7 +49,8 @@ def test_map(r, th, inc, rot, x_m, y_m, surf, back, size):
     test_map = np.full((size, size), back)
     for i in range(size):
         for j in range(size):
-            R = np.sqrt(pow(i - x_m, 2) + pow(j - y_m, 2))
+            x, y = rotate(i, j, x_m, y_m, rot)
+            R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
             test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(0.5*pow(th, 2)))
     return test_map
 
@@ -184,7 +192,8 @@ def e_plot(r, inc, rot, x_m, y_m, col):
 ### ANNULUS Z FUNCTION
 ### Returns the radius of the ellipse at that point
 def a_z(i, j, inc, rot, x_m, y_m):
-    z = np.sqrt((i*np.cos(np.radians(rot)) - j*np.sin(np.radians(rot)) - x_m*np.cos(np.radians(rot)) + y_m*np.sin(np.radians(rot)))**2 + ((j*np.cos(np.radians(rot)) + i*np.sin(np.radians(rot)) - y_m*np.cos(np.radians(rot)) - x_m*np.sin(np.radians(rot)))/np.cos(np.radians(inc)))**2)
+    x, y = rotate(i, j, rot)
+    z = np.sqrt((x)**2 + ((y)**2)/np.cos(np.radians(inc)))
     return z
 
 ### BEST FITTING ANNULUS SEARCH
