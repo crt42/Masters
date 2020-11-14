@@ -35,6 +35,17 @@ def deproject(data, inc):
             
     return new_data
 
+### TEST MAP
+### Creates a map of an artificial ring using input parameters, in order to
+### test fitting methods on.
+def test_map(r, th, inc, rot, x_m, y_m, surf, back, size):
+    test_map = np.full((size, size), back)
+    for i in range(size):
+        for j in range(size):
+            R = np.sqrt(pow(i - x_m, 2) + pow(j - y_m, 2))
+            test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(0.5*pow(th, 2)))
+    return test_map
+
 
 
 #########################
@@ -255,7 +266,7 @@ def a_r_score(init, data):
 ### parameters as a starting point.
 def a_opt(r, th, inc, rot, x_m, y_m, data):
     init = (r, th, inc, rot, x_m, y_m)
-    # Finds the minimum reciprocal scored ellipse
+    # Finds the minimum reciprocal scored annulus
     params = scipy.optimize.minimize(a_r_score, init,
                                      args = data, method = 'Powell')
     print(params['x'])
@@ -283,6 +294,15 @@ def a_surf_score(init, data):
             score += (data[i,j] - map[i,j])**2
     return score
 
+###
+def a_surf_opt(r, th, inc, rot, x_m, y_m, surf, back, data):
+    init = (r, th, inc, rot, x_m, y_m, surf, back)
+    # Finds the minimum difference between data and annulus
+    params = scipy.optimize.minimize(a_surf_score, init,
+                                     args = data, method = 'Powell')
+    print(params['x'])
+    return params['x']
+
 ### DIFFERENTIAL EVOLUTION SURFACE BRIGHTNESS ANNULUS
 ### Performs a differential evolution algorithm search for the best
 ### fitting annulus with a given surface brightness, in the range of
@@ -290,7 +310,7 @@ def a_surf_score(init, data):
 def a_surf_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, surf_min, surf_max, back_min, back_max, data):
     init = [(r_min, r_max), (th_min, th_max), (inc_min, inc_max), (rot_min, rot_max), (x_m_min, x_m_max), (y_m_min, y_m_max), (surf_min, surf_max), (back_min, back_max)]   
     
-    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,))
+    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,), popsize=100, mutation=(1, 1.5))
     print(params['x'])
     return params['x'] 
 
