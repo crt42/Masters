@@ -54,7 +54,8 @@ def test_map(r, th, inc, rot, x_m, y_m, surf, back, size, noise):
             test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(0.5*pow(th, 2)))
     if (noise == True):       
         noise = np.random.poisson(test_map)
-        test_map = test_map + noise
+        test_map = noise
+        
     return test_map
 
 
@@ -322,7 +323,7 @@ def a_surf_opt(r, th, inc, rot, x_m, y_m, surf, back, data):
 def a_surf_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, surf_min, surf_max, back_min, back_max, data):
     init = [(r_min, r_max), (th_min, th_max), (inc_min, inc_max), (rot_min, rot_max), (x_m_min, x_m_max), (y_m_min, y_m_max), (surf_min, surf_max), (back_min, back_max)]   
     
-    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,), popsize=100, mutation=(1, 1.5))
+    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,))
     print(params['x'])
     return params['x'] 
 
