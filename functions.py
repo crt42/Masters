@@ -42,6 +42,19 @@ def deproject(data, inc):
             
     return new_data
 
+### CUT REGION
+### Sets an elliptical region in a dataset to the value chosen.
+def cut(r, inc, rot, x_m, y_m, val, data):
+    w = len(data[0])
+    h = len(data)
+    for i in range(0, w):
+        for j in range(0, h):
+            x, y = rotate(i, j, x_m, y_m, rot)
+            R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
+            if (R < r):
+                data[i, j] = val
+    return data            
+
 ### TEST MAP
 ### Creates a map of an artificial ring using input parameters, in order to
 ### test fitting methods on.
@@ -323,7 +336,7 @@ def a_surf_opt(r, th, inc, rot, x_m, y_m, surf, back, data):
 def a_surf_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, surf_min, surf_max, back_min, back_max, data):
     init = [(r_min, r_max), (th_min, th_max), (inc_min, inc_max), (rot_min, rot_max), (x_m_min, x_m_max), (y_m_min, y_m_max), (surf_min, surf_max), (back_min, back_max)]   
     
-    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,))
+    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,), popsize=50)
     print(params['x'])
     return params['x'] 
 

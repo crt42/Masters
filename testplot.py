@@ -10,7 +10,7 @@ from gpi_analysis.inputs    import getfitsdata, getfitskeywords
 from gpi_analysis.analysis  import make_radialstokes, make_linpolint
 
 # Importing my functions:
-from functions import deproject, hyperbolic, test_map
+from functions import deproject, hyperbolic, cut, test_map
 from functions import e_plot, e_best, e_opt, e_evo
 from functions import a_plot, a_best, a_opt, a_surf_evo, a_surf_opt
 
@@ -41,10 +41,12 @@ print("upper =",vu, " lower=",vl)
 ### PLOTTING IMAGE AND BEST FIT ELLIPSE
 # qphi = deproject(qphi, 31)
 
+qphi = cut(30, 0, 0, 141, 141, 0, qphi)
+
 plt.figure(figsize=(12,12))
 plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 
-t = test_map(60, 20, 30, 110, 141, 141, 10, 1, 282, True)
+# t = test_map(60, 20, 30, 110, 141, 141, 10, 1, 282, True)
 # plt.imshow(t, cmap='seismic', origin='lower')
 
 plt.colorbar(shrink=0.8)
@@ -61,7 +63,7 @@ plt.colorbar(shrink=0.8)
 ### ANNULUS FITTING6
 # a = a_best(58, 62, 18, 22, 28, 32, 90, 120, 141, 142, 141, 142, t)
 # a = a_opt(55, 20, 30, 90, 141, 141, t)
-# a = a_surf_evo(50, 100, 1, 30, 20, 50, 45, 135, 141, 142, 141, 142, 0, 15, 1, 2, t)
+a = a_surf_evo(50, 100, 1, 30, 20, 50, 45, 135, 141, 142, 141, 142, 0, 15, 1, 2, qphi)
 # a = a_surf_opt(40, 25, 30, 90, 141, 141, 10, 1, qphi)
 
 ### ANNULUS PLOTTING
