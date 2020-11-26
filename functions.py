@@ -169,8 +169,10 @@ def e_r_score(init, data):
 def e_opt(r, inc, rot, x_m, y_m, data):
     init = (r, inc, rot, x_m, y_m)
     # Finds the minimum reciprocal scored ellipse
-    params = scipy.optimize.minimize(e_r_score, init,
-                                     args = data, method = 'Powell')
+    params = scipy.optimize.minimize(e_r_score, init, args = data,
+                                     method = 'Powell', tol = 1e-5,
+                                     callback=e_plot(init, 'purple'),
+                                     options={'disp':True})
     print(params['x'])
     return params['x']
 
@@ -180,14 +182,14 @@ def e_opt(r, inc, rot, x_m, y_m, data):
 def e_evo(r_min, r_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     init = [(r_min, r_max), (inc_min, inc_max), (rot_min, rot_max),
             (x_m_min, x_m_max), (y_m_min, y_m_max)]   
-    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,))
+    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,), popsize=300, mutation=(1,1.9))
     print(params['x'])
     return params['x'] 
 
 ### ELLIPSE DRAWING
 ### Draws an ellipse with these parameters and colour.
-def e_plot(r, inc, rot, x_m, y_m, col):
-
+def e_plot(params, col):
+    r, inc, rot, x_m, y_m = params
     t = np.linspace(0, 2*np.pi, 100)
     
     Ell = np.array([r*np.cos(t), r*np.cos(np.radians(inc))*np.sin(t)])  
@@ -320,7 +322,9 @@ def a_surf_score(init, data):
             score += (data[i,j] - map[i,j])**2
     return score
 
-###
+### OPTIMISED SURFACE BRIGHTNESS ANNULUS
+### Performs an optimised algorithm search for the best fitting annulus
+### with a given surface brightness, in the range of parameters given.
 def a_surf_opt(r, th, inc, rot, x_m, y_m, surf, back, data):
     init = (r, th, inc, rot, x_m, y_m, surf, back)
     # Finds the minimum difference between data and annulus
@@ -342,7 +346,8 @@ def a_surf_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max,
 
 ### ANNULUS DRAWING
 ### Draws an annulus with these parameters and colour.
-def a_plot(r, th, inc, rot, x_m, y_m, col, a):
+def a_plot(params, col, alpha):
+    r, th, inc, rot, x_m, y_m = params
     
     # Plotting the annulus
     x_l = np.linspace(0, 282, 100)
@@ -350,4 +355,4 @@ def a_plot(r, th, inc, rot, x_m, y_m, col, a):
     x, y = np.meshgrid(x_l,y_l)
     
     z = a_z(x, y, inc, rot, x_m, y_m)
-    plt.contourf(x, y, z, levels=[r - th/2, r + th/2], colors = col, alpha = a)
+    plt.contourf(x, y, z, levels=[r - th/2, r + th/2], colors = col, alpha = alpha)

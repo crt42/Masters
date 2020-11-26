@@ -52,22 +52,22 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 plt.colorbar(shrink=0.8)
 
 ### ELLIPSE FITTING
-# e = e_best(60, 65, 25, 35, 85, 115, 135, 145, 135, 145, t)
-# e = e_opt(40, 0, 90, 141, 141, t)
-# e = e_evo(40, 100, 0, 60, 45, 135, 131, 151, 131, 151, t)
+# e = e_best(55, 65, 30, 40, 90, 110, 140, 145, 140, 145, qphi)
+e = e_opt(50, 30, 110, 141, 141, qphi)
+# e = e_evo(50, 70, 0, 60, 45, 135, 136, 146, 141, 146, qphi)
 
 ### ELLIPSE PLOTTING
-# e_plot(e[0], e[1], e[2], e[3], e[4], 'k')
+e_plot(e, 'k')
 # e_plot(61, 30, 90, 141, 141, 'k')
 
-### ANNULUS FITTING6
+### ANNULUS FITTING
 # a = a_best(58, 62, 18, 22, 28, 32, 90, 120, 141, 142, 141, 142, t)
 # a = a_opt(55, 20, 30, 90, 141, 141, t)
-a = a_surf_evo(50, 100, 1, 30, 20, 50, 45, 135, 141, 142, 141, 142, 0, 15, 1, 2, qphi)
+# a = a_surf_evo(55, 60, 1, 30, 32, 33, 83, 84, 141, 142, 142, 143, 5, 15, 0, 2, qphi)
 # a = a_surf_opt(40, 25, 30, 90, 141, 141, 10, 1, qphi)
 
 ### ANNULUS PLOTTING
-a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.4)
+# a_plot(a, 'k', 0.4)
 # a_plot(55, 20, 30, 70, 141, 141, 'k', 0.4)
 # e_plot(a[0], a[2], a[3], a[4], a[5], 'k')
 
