@@ -182,7 +182,7 @@ def e_opt(r, inc, rot, x_m, y_m, data):
 def e_evo(r_min, r_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     init = [(r_min, r_max), (inc_min, inc_max), (rot_min, rot_max),
             (x_m_min, x_m_max), (y_m_min, y_m_max)]   
-    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,), popsize=300, mutation=(1,1.9))
+    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,), popsize=1000, tol=1e-8, mutation=(1,1.9),  polish=True)
     print(params['x'])
     return params['x'] 
 

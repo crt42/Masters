@@ -27,13 +27,13 @@ i,qphi,uphi,v   = getfitsdata(filename)
 # Get useful keywords from fits header:                                                                                            
 target  = getfitskeywords(filename, 'OBJECT')
 itime   = getfitskeywords(filename, 'ITIME', HEADER='SCI')
-print('target, itime', target,itime)
+# print('target, itime', target,itime)
 
 qphi = np.nan_to_num(qphi)
 
 vu = np.quantile(qphi, 0.99)
 vl = np.quantile(qphi, 0.01)
-print("upper =",vu, " lower=",vl)
+# print("upper =",vu, " lower=",vl)
 
 ### HYPERBOLIC FUNCTION
 # qphi = hyperbolic(qphi, 10, vu, vl)
@@ -41,7 +41,7 @@ print("upper =",vu, " lower=",vl)
 ### PLOTTING IMAGE AND BEST FIT ELLIPSE
 # qphi = deproject(qphi, 31)
 
-qphi = cut(30, 0, 0, 141, 141, 0, qphi)
+# qphi = cut(30, 0, 0, 141, 141, 0, qphi)
 
 plt.figure(figsize=(12,12))
 plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
@@ -52,9 +52,9 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 plt.colorbar(shrink=0.8)
 
 ### ELLIPSE FITTING
-# e = e_best(55, 65, 30, 40, 90, 110, 140, 145, 140, 145, qphi)
-e = e_opt(50, 30, 110, 141, 141, qphi)
-# e = e_evo(50, 70, 0, 60, 45, 135, 136, 146, 141, 146, qphi)
+# e = e_best(60, 65, 30, 35, 90, 110, 141, 142, 141, 142, qphi)
+# e = e_opt(50, 30, 110, 141, 141, qphi)
+e = e_evo(55, 65, 25, 40, 80, 120, 138, 144, 138, 144, qphi)
 
 ### ELLIPSE PLOTTING
 e_plot(e, 'k')
