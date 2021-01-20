@@ -10,8 +10,8 @@ from gpi_analysis.inputs    import getfitsdata, getfitskeywords
 from gpi_analysis.analysis  import make_radialstokes, make_linpolint
 
 # Importing my functions:
-from functions import deproject, hyperbolic, cut, test_map
-from functions import e_plot, e_best, e_opt, e_evo
+from functions import deproject, hyperbolic, cut, test_map, rotate
+from functions import e_plot, e_best, e_opt, e_evo, e_mask
 from functions import a_plot, a_best, a_opt, a_surf_evo, a_surf_opt
 
 ### COMPUTATION TIME START
@@ -49,16 +49,19 @@ plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 # t = test_map(60, 20, 30, 110, 141, 141, 10, 1, 282, True)
 # plt.imshow(t, cmap='seismic', origin='lower')
 
+# e = e_mask(60, 30, 95, 141, 141, qphi)
+# plt.imshow(e)
+ 
 plt.colorbar(shrink=0.8)
 
 ### ELLIPSE FITTING
-# e = e_best(60, 65, 30, 35, 90, 110, 141, 142, 141, 142, qphi)
-# e = e_opt(50, 30, 110, 141, 141, qphi)
+# e = e_best(55, 65, 30, 35, 90, 110, 141, 142, 141, 142, qphi)
+# e = e_opt(60, 30, 110, 141, 141, qphi)
 e = e_evo(55, 65, 25, 40, 80, 120, 138, 144, 138, 144, qphi)
 
 ### ELLIPSE PLOTTING
+# e = 60, 30, 0, 141, 141
 e_plot(e, 'k')
-# e_plot(61, 30, 90, 141, 141, 'k')
 
 ### ANNULUS FITTING
 # a = a_best(58, 62, 18, 22, 28, 32, 90, 120, 141, 142, 141, 142, t)

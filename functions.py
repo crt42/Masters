@@ -119,12 +119,41 @@ def e_best(r_min, r_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y
     
     return ell_params  
 
+### ELLIPSE MASK
+def e_mask(r, inc, rot, x_m, y_m, data):
+    
+    # Initialising a mask and score    
+    mask = np.full((len(data), len(data[0])), 0)
+    mask_no = 0;
+                        
+    # Drawning an ellipse with this r, inc, rot, x_m, and y_m
+    t = np.linspace(0, 2*np.pi, 10000)
+    Ell = np.array([r*np.cos(t), r*np.cos(np.radians(inc))*np.sin(t)])  
+    R_rot = np.array([[np.cos(np.radians(rot)), -np.sin(np.radians(rot))],
+                      [np.sin(np.radians(rot)), np.cos(np.radians(rot))]])
+    Ell_rot = np.zeros((2,Ell.shape[1]))
+                        
+    for i in range(Ell.shape[1]):
+                            
+        # Rotating the ellipse
+        Ell_rot[:,i] = np.dot(R_rot,Ell[:,i])
+                            
+        # Producing the mask
+        sq_x = np.int(x_m) + np.int(Ell_rot[0,i])
+        sq_y = np.int(y_m) + np.int(Ell_rot[1,i])
+     
+        # Calculating the score
+        mask_no += 1
+        mask[sq_y, sq_x] += 1
+            
+    return mask
+
 ### SCORE ELLIPSE
 ### Scores a particular ellipse on the data given.
 def e_score(r, inc, rot, x_m, y_m, data):
     
     # Initialising a mask and score    
-    mask = np.full((len(data), len(data[0])), False)
+    mask = np.full((len(data), len(data[0])), 0)
     mask_no = 0;
     score = 0;
                         
@@ -145,14 +174,18 @@ def e_score(r, inc, rot, x_m, y_m, data):
         sq_y = np.int(y_m) + np.int(Ell_rot[1,i])
                             
         # Checking to not count a pixel's score multiple times
-        if (mask[sq_y, sq_x] == False):
-                                
+        if (mask[sq_y, sq_x] == 0):
+            mask_no += 1                  
             # Calculating the score
-            score += data[sq_y, sq_x]
-            mask_no += 1
-            mask[sq_y, sq_x] = True
+        mask[sq_y, sq_x] += 1  
             
-    return score
+            
+    for i in range(len(data)):
+        for j in range(len(data[0])):
+            score += (data[i, j] * mask[i, j])
+    
+    # print(score, mask_no, score/mask_no)
+    return score/mask_no
 
 ### RECIPROCAL SCORE ELLIPSE
 ### Finds the reciprocal of the score of an ellipse.
@@ -181,8 +214,8 @@ def e_opt(r, inc, rot, x_m, y_m, data):
 ### fitting ellipse in the range of parameters given.
 def e_evo(r_min, r_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     init = [(r_min, r_max), (inc_min, inc_max), (rot_min, rot_max),
-            (x_m_min, x_m_max), (y_m_min, y_m_max)]   
-    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,), popsize=1000, tol=1e-8, mutation=(1,1.9),  polish=True)
+            (x_m_min, x_m_max), (y_m_min, y_m_max)]
+    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,), popsize=100, tol=1e-8, mutation=(1,1.9), polish=True)
     print(params['x'])
     return params['x'] 
 
