@@ -11,7 +11,7 @@ from gpi_analysis.analysis  import make_radialstokes, make_linpolint
 
 # Importing my functions:
 from functions import deproject, hyperbolic, cut, test_map, rotate
-from functions import e_plot, e_best, e_opt, e_evo, e_mask
+from functions import e_plot, e_best, e_opt, e_evo, e_mask, e_score
 from functions import a_plot, a_best, a_opt, a_surf_evo, a_surf_opt
 
 ### COMPUTATION TIME START

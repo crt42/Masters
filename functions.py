@@ -177,12 +177,7 @@ def e_score(r, inc, rot, x_m, y_m, data):
         if (mask[sq_y, sq_x] == 0):
             mask_no += 1                  
             # Calculating the score
-        mask[sq_y, sq_x] += 1  
-            
-            
-    for i in range(len(data)):
-        for j in range(len(data[0])):
-            score += (data[i, j] * mask[i, j])
+        score += data[sq_y, sq_x]
     
     # print(score, mask_no, score/mask_no)
     return score
