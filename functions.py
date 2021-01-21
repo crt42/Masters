@@ -170,16 +170,15 @@ def e_score(r, inc, rot, x_m, y_m, data):
         Ell_rot[:,i] = np.dot(R_rot,Ell[:,i])
                             
         # Producing the mask
-        sq_x = np.int(x_m) + np.int(Ell_rot[0,i])
-        sq_y = np.int(y_m) + np.int(Ell_rot[1,i])
+        sq_x = np.int(x_m + Ell_rot[0,i])
+        sq_y = np.int(y_m + Ell_rot[1,i])
                             
         # Checking to not count a pixel's score multiple times
         if (mask[sq_y, sq_x] == 0):
             mask_no += 1                  
-            # Calculating the score
+        # Calculating the score
         score += data[sq_y, sq_x]
     
-    # print(score, mask_no, score/mask_no)
     return score
 
 ### RECIPROCAL SCORE ELLIPSE
@@ -210,7 +209,7 @@ def e_opt(r, inc, rot, x_m, y_m, data):
 def e_evo(r_min, r_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, data):
     init = [(r_min, r_max), (inc_min, inc_max), (rot_min, rot_max),
             (x_m_min, x_m_max), (y_m_min, y_m_max)]
-    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,), popsize=100, tol=1e-8, mutation=(1,1.9), polish=True)
+    params = scipy.optimize.differential_evolution(e_r_score, init, args = (data,), popsize=1000, tol=1e-8, mutation=(1,1.9), polish=True)
     print(params['x'])
     return params['x'] 
 

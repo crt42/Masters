@@ -79,3 +79,16 @@ plt.show()
 ### COMPUTATION TIME END
 t_end = datetime.datetime.now()
 print("Computation time:", t_end - t_start)
+
+# t_start = datetime.datetime.now()
+# e = e_evo(55, 65, 25, 40, 80, 120, 138, 144, 138, 144, qphi)
+# e_plot(e, 'k')
+# t_end = datetime.datetime.now()
+# print("Computation time:", t_end - t_start)
+
+# t_start = datetime.datetime.now()
+# e = e_evo(55, 65, 25, 40, 80, 120, 138, 144, 138, 144, qphi)
+# e_plot(e, 'k')
+# t_end = datetime.datetime.now()
+# print("Computation time:", t_end - t_start)
+
