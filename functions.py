@@ -64,10 +64,11 @@ def test_map(r, th, inc, rot, x_m, y_m, surf, back, size, noise):
         for j in range(size):
             x, y = rotate(i, j, x_m, y_m, rot)
             R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
-            test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(0.5*pow(th, 2)))
+            test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(2*pow(th/2, 2)))
     if (noise == True):       
         noise = np.random.poisson(test_map)
-        test_map = noise
+        
+        test_map += noise
         
     return test_map
 
@@ -170,8 +171,8 @@ def e_score(r, inc, rot, x_m, y_m, data):
         Ell_rot[:,i] = np.dot(R_rot,Ell[:,i])
                             
         # Producing the mask
-        sq_x = np.int(x_m + Ell_rot[0,i])
-        sq_y = np.int(y_m + Ell_rot[1,i])
+        sq_x = np.int(x_m) + np.int(Ell_rot[0,i])
+        sq_y = np.int(y_m) + np.int(Ell_rot[1,i])
                             
         # Checking to not count a pixel's score multiple times
         if (mask[sq_y, sq_x] == 0):
@@ -346,7 +347,7 @@ def a_surf_score(init, data):
     map = a_surf_map(r, th, inc, rot, x_m, y_m, surf, back, data)
     for i in range (0, len(data)):
         for j in range(0, len(data[0])):
-            score += (data[i,j] - map[i,j])**2
+            score += np.sqrt((data[i,j] - map[i,j])**2)
     return score
 
 ### OPTIMISED SURFACE BRIGHTNESS ANNULUS
@@ -355,8 +356,10 @@ def a_surf_score(init, data):
 def a_surf_opt(r, th, inc, rot, x_m, y_m, surf, back, data):
     init = (r, th, inc, rot, x_m, y_m, surf, back)
     # Finds the minimum difference between data and annulus
-    params = scipy.optimize.minimize(a_surf_score, init,
-                                     args = data, method = 'Powell')
+    params = scipy.optimize.minimize(a_surf_score, init, args = data,
+                                     method = 'Powell', tol = 1e-5,
+                                     callback=e_plot((init[0], init[2], init[3], init[4], init[5]), 'k'),
+                                     options={'disp':True})
     print(params['x'])
     return params['x']
 
@@ -367,19 +370,53 @@ def a_surf_opt(r, th, inc, rot, x_m, y_m, surf, back, data):
 def a_surf_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, surf_min, surf_max, back_min, back_max, data):
     init = [(r_min, r_max), (th_min, th_max), (inc_min, inc_max), (rot_min, rot_max), (x_m_min, x_m_max), (y_m_min, y_m_max), (surf_min, surf_max), (back_min, back_max)]   
     
-    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,), popsize=50)
+    params = scipy.optimize.differential_evolution(a_surf_score, init, args = (data,), popsize=50, tol=1e-5, polish=True)
     print(params['x'])
-    return params['x'] 
+    return params['x']
+
+### GAUSSIAN SURFACE BRIGHTNESS ANNULUS SCORE
+### Returns the score of the data minus a surface brightness annulus map.
+def a_gau_score(init, data):
+    r, th, inc, rot, x_m, y_m, surf, back = init
+    score = 0
+    map = test_map(r, th, inc, rot, x_m, y_m, surf, back, len(data), False)
+    for i in range (0, len(data)):
+        for j in range(0, len(data[0])):
+            score += np.sqrt((data[i,j] - map[i,j])**2)
+    return score
+
+### OPTIMISED GAUSSIAN SURFACE BRIGHTNESS ANNULUS
+### Performs an optimised algorithm search for the best fitting annulus
+### with a given surface brightness, in the range of parameters given.
+def a_gau_opt(r, th, inc, rot, x_m, y_m, surf, back, data):
+    init = (r, th, inc, rot, x_m, y_m, surf, back)
+    # Finds the minimum difference between data and annulus
+    params = scipy.optimize.minimize(a_gau_score, init, args = data,
+                                     method = 'Powell', tol = 1e-5,
+                                     callback=e_plot((init[0], init[2], init[3], init[4], init[5]), 'k'),
+                                     options={'disp':True})
+    print(params['x'])
+    return params['x']
+
+### DIFFERENTIAL EVOLUTION GAUSSIAN SURFACE BRIGHTNESS ANNULUS
+### Performs a differential evolution algorithm search for the best
+### fitting annulus with a given surface brightness, in the range of
+### parameters given.
+def a_gau_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, x_m_min, x_m_max, y_m_min, y_m_max, surf_min, surf_max, back_min, back_max, data):
+    init = [(r_min, r_max), (th_min, th_max), (inc_min, inc_max), (rot_min, rot_max), (x_m_min, x_m_max), (y_m_min, y_m_max), (surf_min, surf_max), (back_min, back_max)]   
+    
+    params = scipy.optimize.differential_evolution(a_gau_score, init, args = (data,), popsize=10, polish=True)
+    print(params['x'])
+    return params['x']
 
 ### ANNULUS DRAWING
 ### Draws an annulus with these parameters and colour.
-def a_plot(params, col, alpha):
-    r, th, inc, rot, x_m, y_m = params
+def a_plot(r, th, inc, rot, x_m, y_m, col, alpha):
     
     # Plotting the annulus
     x_l = np.linspace(0, 282, 100)
     y_l = np.linspace(0, 282, 100)
     x, y = np.meshgrid(x_l,y_l)
     
-    z = a_z(x, y, inc, rot, x_m, y_m)
+    z = a_z(x, y, inc, 180-rot, x_m, y_m)
     plt.contourf(x, y, z, levels=[r - th/2, r + th/2], colors = col, alpha = alpha)
