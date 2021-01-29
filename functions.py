@@ -1,5 +1,8 @@
-### FUNCTIONS FOR PROTOPLANETARY DISC ANALYSIS
+##################################################
+### FUNCTIONS FOR PROTOPLANETARY DISC ANALYSIS ###
+##################################################
 
+### Importing libraries
 import numpy as np
 import datetime
 import scipy.optimize
@@ -58,21 +61,23 @@ def cut(r, inc, rot, x_m, y_m, val, data):
 ### TEST MAP
 ### Creates a map of an artificial ring using input parameters, in order to
 ### test fitting methods on.
-def test_map(r, th, inc, rot, x_m, y_m, surf, back, size, noise):
+def test_map(r, th, inc, rot, x_m, y_m, surf, back, size):
     test_map = np.full((size, size), back)
     for i in range(size):
         for j in range(size):
             x, y = rotate(i, j, x_m, y_m, rot)
             R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
             test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(2*pow(th/2, 2)))
-    if (noise == True):       
-        noise = np.random.poisson(test_map)
-        
-        test_map += noise
-        
+            
     return test_map
 
-
+### ADD NOISE
+### Adds Poissonian noise to an image
+def add_noise(data, n):
+    noise = data
+    for i in range(n):   
+        noise = np.random.poisson(np.abs(noise))
+    return noise
 
 #########################
 ### ELLIPSE FUNCTIONS ###
@@ -379,7 +384,7 @@ def a_surf_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max,
 def a_gau_score(init, data):
     r, th, inc, rot, x_m, y_m, surf, back = init
     score = 0
-    map = test_map(r, th, inc, rot, x_m, y_m, surf, back, len(data), False)
+    map = test_map(r, th, inc, rot, x_m, y_m, surf, back, len(data))
     for i in range (0, len(data)):
         for j in range(0, len(data[0])):
             score += np.sqrt((data[i,j] - map[i,j])**2)
