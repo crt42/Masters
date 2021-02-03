@@ -71,6 +71,23 @@ def test_map(r, th, inc, rot, x_m, y_m, surf, back, size):
             
     return test_map
 
+### TEST MAP WITH MIE SCATTERING
+### Creates a map of an artificial ring using input parameters, in order to
+### test fitting methods on.
+def test_map_mie(r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back, size):
+    test_map = np.full((size, size), back)
+    for i in range(size):
+        for j in range(size):
+            x, y = rotate(i, j, x_m, y_m, rot)
+            
+            R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
+            theta = np.arctan2(i - x_m, j - y_m)
+            surf = surf_max + surf_theta*pow(np.cos(0.5*(np.radians(theta_max) - theta + np.pi)), 2)
+            
+            test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(2*pow(th/2, 2)))
+            
+    return test_map
+
 ### ADD NOISE
 ### Adds Poissonian noise to an image
 def add_noise(data, n):
