@@ -72,8 +72,8 @@ def test_map(r, th, inc, rot, x_m, y_m, surf, back, size):
     return test_map
 
 ### TEST MAP WITH MIE SCATTERING
-### Creates a map of an artificial ring using input parameters, in order to
-### test fitting methods on.
+### Creates a map of an artificial ring with consideration of Mie scattering 
+### using input parameters in order to test fitting methods on.
 def test_map_mie(r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back, size):
     test_map = np.full((size, size), back)
     for i in range(size):
@@ -431,6 +431,27 @@ def a_gau_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, 
     print(params['x'])
     return params['x']
 
+### GAUSSIAN SURFACE BRIGHTNESS ANNULUS WITH MIE SCORE
+### Returns the score of the data minus a surface brightness annulus map.
+def a_mie_score(init, data):
+    r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back = init
+    score = 0
+    map = test_map_mie(r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back, len(data))
+    for i in range (0, len(data)):
+        for j in range(0, len(data[0])):
+            score += np.sqrt((data[i,j] - map[i,j])**2)
+    return score
+
+### OPTIMISED GAUSSIAN SURFACE BRIGHTNESS ANNULUS WITH MIE
+### Performs an optimised algorithm search for the best fitting annulus
+### with a given surface brightness, in the range of parameters given.
+def a_mie_opt(r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back, data):
+    init = (r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back)
+    # Finds the minimum difference between data and annulus
+    params = scipy.optimize.minimize(a_mie_score, init, args = data,
+                                     method = 'Powell')
+    print(params['x'])
+    return params['x']
 ### ANNULUS DRAWING
 ### Draws an annulus with these parameters and colour.
 def a_plot(r, th, inc, rot, x_m, y_m, col, alpha):
