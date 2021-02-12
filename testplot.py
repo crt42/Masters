@@ -13,7 +13,7 @@ from gpi_analysis.inputs    import getfitsdata, getfitskeywords
 from gpi_analysis.analysis  import make_radialstokes, make_linpolint
 
 # Importing my functions:
-from functions import deproject, hyperbolic, cut, test_map, rotate, add_noise, test_map_mie
+from functions import deproject, hyperbolic, cut, test_map, rotate, add_noise, test_map_mie, hg_map
 from functions import e_plot, e_best, e_opt, e_evo, e_mask, e_score
 from functions import a_plot, a_best, a_opt, a_surf_evo, a_surf_opt, a_gau_opt, a_gau_evo, a_mie_opt
 from errors import e_best_err, e_evo_err, a_gau_opt_err
@@ -48,19 +48,18 @@ vl = np.quantile(qphi, 0.01)
 ### PLOTTING IMAGE AND BEST FIT ELLIPSE
 # qphi = deproject(qphi, 31)
 
-# qphi = cut(30, 0, 0, 141, 141, 0, qphi)
+qphi = cut(35, 0, 0, 141, 141, 0, qphi)
 
 plt.figure(figsize=(12,12))
-plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
-
-plt.colorbar(shrink=0.8)
+# plt.imshow(qphi, cmap='seismic', origin='lower', vmin = vl, vmax = vu)
 
 # t = test_map(55.37, 24.36, 23.32, 98.48, 140.2, 141.2, 9.954, 0, 282)
-# t = test_map_mie(60, 30, 30, 100, 141, 141, 10, 10, 45, 0, 282)
+# t = test_map_mie(55, 24, 23, 97, 141, 142, 7, 5, 35, 0, 282)
+t = hg_map(50, 20, 30, 0, 141, 141, 0.5, 0, 282)
 # t = add_noise(t, 1)
-# plt.imshow(t, cmap='seismic', origin='lower')
+plt.imshow(t, cmap='seismic', origin='lower')
 
-# plt.colorbar(shrink=0.8)
+plt.colorbar(shrink=0.8)
 
 ### ELLIPSE FITTING
 # e = e_best(55, 65, 30, 35, 90, 110, 141, 142, 141, 142, qphi)
@@ -82,10 +81,10 @@ plt.colorbar(shrink=0.8)
 # a = a_gau_opt(60, 20, 30, 90, 141, 141, 10, 1, qphi)
 # a = a_gau_evo(55, 60, 10, 40, 30, 35, 80, 90, 141, 143, 141, 143, 5, 15, 0, 2, qphi)
 
-a = a_mie_opt(60, 20, 30, 90, 141, 141, 10, 10, 45, 0, qphi)
+# a = a_mie_opt(60, 20, 30, 90, 141, 141, 10, 10, 45, 0, qphi)
 
 ### ANNULUS PLOTTING
-a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.4)
+# a_plot(a[0], a[1], a[2], a[3], a[4], a[5], 'k', 0.4)
 # a_plot(55.37, 24.36, 33.18, 98.03, 142.5, 141.3, 'k', 0.4)
 # e_plot(a[0], a[2], a[3], a[4], a[5], 'k')
 

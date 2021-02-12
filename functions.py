@@ -74,7 +74,7 @@ def test_map(r, th, inc, rot, x_m, y_m, surf, back, size):
 ### TEST MAP WITH MIE SCATTERING
 ### Creates a map of an artificial ring with consideration of Mie scattering 
 ### using input parameters in order to test fitting methods on.
-def test_map_mie(r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back, size):
+def test_map_mie(r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back, size):
     test_map = np.full((size, size), back)
     for i in range(size):
         for j in range(size):
@@ -82,11 +82,35 @@ def test_map_mie(r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, bac
             
             R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
             theta = np.arctan2(i - x_m, j - y_m)
-            surf = surf_max + surf_theta*pow(np.cos(0.5*(np.radians(theta_max) - theta + np.pi)), 2)
+            surf = surf_0 + surf_theta*pow(np.cos(0.5*(np.radians(theta_max) - theta + np.pi)), 2)
             
             test_map[i,j] = back + surf*np.exp((-pow(R - r, 2))/(2*pow(th/2, 2)))
             
     return test_map
+
+def hg_map(r, th, inc, rot, x_m, y_m, g, back, size):
+    hg_map = np.full((size, size), back, dtype=float)
+    rot = np.radians(rot)
+    inc = np.radians(inc)
+
+    for i in range(size):
+        for j in range(size):
+            x, y = rotate(i, j, x_m, y_m, rot)
+            R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
+            
+            z = -((i-x_m)*np.sin(inc)*np.sin(rot)+(j-y_m)*np.sin(inc)*np.cos(rot))/(np.cos(inc))
+            mod = np.sqrt(pow(i-x_m,2)+pow(j-y_m,2)+pow(z,2))
+            
+            if (mod == 0):
+                op_vec = 0
+            else:
+                op_vec = -z/mod
+  
+            p = (1-pow(g,2))/(4*np.pi*pow(1+pow(g,2)+2*g*op_vec,1.5))
+            
+            hg_map[i,j] = back + p*np.exp((-pow(R - r, 2))/(2*pow(th/2, 2)))
+    
+    return hg_map
 
 ### ADD NOISE
 ### Adds Poissonian noise to an image
@@ -434,9 +458,9 @@ def a_gau_evo(r_min, r_max, th_min, th_max, inc_min, inc_max, rot_min, rot_max, 
 ### GAUSSIAN SURFACE BRIGHTNESS ANNULUS WITH MIE SCORE
 ### Returns the score of the data minus a surface brightness annulus map.
 def a_mie_score(init, data):
-    r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back = init
+    r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back = init
     score = 0
-    map = test_map_mie(r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back, len(data))
+    map = test_map_mie(r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back, len(data))
     for i in range (0, len(data)):
         for j in range(0, len(data[0])):
             score += np.sqrt((data[i,j] - map[i,j])**2)
@@ -445,13 +469,14 @@ def a_mie_score(init, data):
 ### OPTIMISED GAUSSIAN SURFACE BRIGHTNESS ANNULUS WITH MIE
 ### Performs an optimised algorithm search for the best fitting annulus
 ### with a given surface brightness, in the range of parameters given.
-def a_mie_opt(r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back, data):
-    init = (r, th, inc, rot, x_m, y_m, surf_max, surf_theta, theta_max, back)
+def a_mie_opt(r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back, data):
+    init = (r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back)
     # Finds the minimum difference between data and annulus
     params = scipy.optimize.minimize(a_mie_score, init, args = data,
                                      method = 'Powell')
     print(params['x'])
     return params['x']
+
 ### ANNULUS DRAWING
 ### Draws an annulus with these parameters and colour.
 def a_plot(r, th, inc, rot, x_m, y_m, col, alpha):
