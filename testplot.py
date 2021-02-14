@@ -55,7 +55,7 @@ plt.figure(figsize=(12,12))
 
 # t = test_map(55.37, 24.36, 23.32, 98.48, 140.2, 141.2, 9.954, 0, 282)
 # t = test_map_mie(55, 24, 23, 97, 141, 142, 7, 5, 35, 0, 282)
-t = hg_map(50, 20, 30, 0, 141, 141, 0.5, 0, 282)
+t = hg_map(50, 20, 45, 45, 141, 141, 0.5, 0, 282)
 # t = add_noise(t, 1)
 plt.imshow(t, cmap='seismic', origin='lower')
 
@@ -67,7 +67,7 @@ plt.colorbar(shrink=0.8)
 # e = e_evo(55, 65, 25, 40, 80, 120, 138, 144, 138, 144, qphi)
 
 ### ELLIPSE PLOTTING
-# e = 57, 90, 98, 141, 141
+# e = 50, 30, 0, 141, 141
 # e_plot(e, 'k')
 
 

@@ -90,16 +90,15 @@ def test_map_mie(r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back,
 
 def hg_map(r, th, inc, rot, x_m, y_m, g, back, size):
     hg_map = np.full((size, size), back, dtype=float)
-    rot = np.radians(rot)
     inc = np.radians(inc)
 
     for i in range(size):
         for j in range(size):
             x, y = rotate(i, j, x_m, y_m, rot)
-            R = np.sqrt(pow(x/np.cos(np.radians(inc)), 2) + pow(y, 2))
+            R = np.sqrt(pow(x, 2) + pow(y/np.cos(inc), 2))
             
-            z = -((i-x_m)*np.sin(inc)*np.sin(rot)+(j-y_m)*np.sin(inc)*np.cos(rot))/(np.cos(inc))
-            mod = np.sqrt(pow(i-x_m,2)+pow(j-y_m,2)+pow(z,2))
+            z = -y*np.tan(inc)
+            mod = np.sqrt(pow(x,2)+pow(y,2)+pow(z,2))
             
             if (mod == 0):
                 op_vec = 0
