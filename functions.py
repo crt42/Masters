@@ -88,7 +88,7 @@ def test_map_mie(r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back,
             
     return test_map
 
-def hg_map(r, th, inc, rot, x_m, y_m, g, back, size):
+def hg_map(r, th, inc, rot, x_m, y_m, g, surf, back, size):
     hg_map = np.full((size, size), back, dtype=float)
     inc = np.radians(inc)
 
@@ -107,7 +107,7 @@ def hg_map(r, th, inc, rot, x_m, y_m, g, back, size):
   
             p = (1-pow(g,2))/(4*np.pi*pow(1+pow(g,2)+2*g*op_vec,1.5))
             
-            hg_map[i,j] = back + p*np.exp((-pow(R - r, 2))/(2*pow(th/2, 2)))
+            hg_map[i,j] = back + surf*p*np.exp((-pow(R - r, 2))/(2*pow(th/2, 2)))
     
     return hg_map
 
@@ -472,6 +472,28 @@ def a_mie_opt(r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back, da
     init = (r, th, inc, rot, x_m, y_m, surf_0, surf_theta, theta_max, back)
     # Finds the minimum difference between data and annulus
     params = scipy.optimize.minimize(a_mie_score, init, args = data,
+                                     method = 'Powell')
+    print(params['x'])
+    return params['x']
+
+### HENYEY GREENSTEIN GAUSSIAN RING SCORE
+### Returns the score of the data minus a surface brightness annulus map.
+def a_hg_score(init, data):
+    r, th, inc, rot, x_m, y_m, g, surf, back = init
+    score = 0
+    map = hg_map(r, th, inc, rot, x_m, y_m, g, surf, back, len(data))
+    for i in range (0, len(data)):
+        for j in range(0, len(data[0])):
+            score += np.sqrt((data[i,j] - map[i,j])**2)
+    return score
+
+### OPTIMISED HENYEY GREENSTEIN GAUSSIAN RING
+### Performs an optimised algorithm search for the best fitting annulus
+### with a given surface brightness, in the range of parameters given.
+def a_hg_opt(r, th, inc, rot, x_m, y_m, g, surf, back, data):
+    init = (r, th, inc, rot, x_m, y_m, g, surf, back)
+    # Finds the minimum difference between data and annulus
+    params = scipy.optimize.minimize(a_hg_score, init, args = data,
                                      method = 'Powell')
     print(params['x'])
     return params['x']
